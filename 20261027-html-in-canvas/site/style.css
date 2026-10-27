@@ -1,0 +1,309 @@
+:root {
+  --bg: #0d0f1a;
+  --panel: #161a2b;
+  --text: #e8eaf6;
+  --muted: #9aa0c3;
+  --accent: #ff4f9a;
+  --accent2: #46e3ff;
+  --line: #2a3050;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.7 system-ui, -apple-system, "Hiragino Sans", sans-serif;
+}
+
+header, nav, main, footer {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+header h1 {
+  margin: 32px 0 8px;
+  font-size: clamp(24px, 5vw, 40px);
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lead { color: var(--muted); margin: 0 0 12px; }
+
+.support {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 14px;
+}
+.support p { margin: 0; }
+#flags-guide { margin-top: 8px; }
+.support ol { margin: 8px 0; padding-left: 1.4em; }
+.support li { margin: 4px 0; }
+.support button {
+  font: inherit;
+  font-size: 13px;
+  color: var(--bg);
+  background: var(--accent2);
+  border: none;
+  border-radius: 6px;
+  padding: 2px 10px;
+  margin-left: 4px;
+  cursor: pointer;
+}
+.support.ok { border-color: #2f7d5b; }
+.support.ng { border-color: var(--accent); }
+
+code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.92em;
+  background: #ffffff14;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.tabs button {
+  font: inherit;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+.tabs button[aria-selected="true"] {
+  color: var(--bg);
+  background: var(--accent2);
+  border-color: var(--accent2);
+  font-weight: 600;
+}
+
+.demo { margin-top: 16px; }
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 10px;
+}
+.toolbar button {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 14px;
+  cursor: pointer;
+}
+.toolbar button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.toolbar label { display: inline-flex; align-items: center; gap: 6px; }
+.hint { color: var(--muted); font-size: 13px; }
+
+.stage {
+  display: block;
+  width: 100%;
+  height: min(560px, 75vh);
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: radial-gradient(ellipse at 50% 30%, #1d2240, #0a0c16);
+  touch-action: none;
+}
+
+.note { color: var(--muted); font-size: 14px; }
+
+footer {
+  margin: 40px auto;
+  color: var(--muted);
+  font-size: 13px;
+}
+footer a { color: var(--accent2); }
+
+/* canvas に描く明るい部品は、ページのダークテーマに引きずられないようにする */
+.piece, .note-card, .todo { color-scheme: light; }
+
+/* ---- 1. 崩れる設定画面: canvas の中で描かれる部品 ---- */
+.piece {
+  width: max-content;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fdfdff;
+  color: #1c1f33;
+  border: 2px solid #1c1f33;
+  font-size: 15px;
+  cursor: grab;
+  user-select: none;
+}
+.piece.title {
+  font-size: 22px;
+  font-weight: 700;
+  background: #ffe066;
+}
+.piece.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.piece input, .piece select, .piece button {
+  font: inherit;
+  cursor: auto;
+  user-select: auto;
+}
+.piece input[type="text"], .piece input:not([type]), .piece select {
+  color: #1c1f33;
+  background: #fff;
+  border: 1px solid #9097b8;
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+.piece button {
+  color: #fff;
+  background: #6a5cff;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+.piece button.save { background: #1aa36f; }
+.piece label { display: inline-flex; align-items: center; gap: 4px; }
+
+/* ---- 2. CRT ターミナル ---- */
+.term {
+  --fg: #6dff9c;
+  display: flex;
+  flex-direction: column;
+  padding: 36px 48px;
+  background: #031007;
+  color: var(--fg);
+  font: 17px/1.45 ui-monospace, "SF Mono", Menlo, "Hiragino Kaku Gothic ProN", monospace;
+  text-shadow: 0 0 3px currentColor;
+  overflow: hidden;
+}
+.term-out {
+  flex: 1;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  scrollbar-width: none;
+}
+.term-line { display: flex; gap: 10px; }
+.term-prompt { color: var(--fg); opacity: 0.8; }
+.term input {
+  flex: 1;
+  font: inherit;
+  color: var(--fg);
+  caret-color: var(--fg);
+  text-shadow: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+}
+.term .em { color: #fff; }
+
+/* ---- 3. 万華鏡メモ ---- */
+.note-card {
+  width: 260px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #ffe066;
+  color: #2b1d00;
+  border: 3px solid #2b1d00;
+  box-shadow: 0 6px 0 #2b1d00;
+}
+.note-tools { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.note-tools button {
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 2px solid #2b1d00;
+  background: #fff;
+  cursor: pointer;
+}
+.note-tools input[type="color"] {
+  margin-left: auto;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid #2b1d00;
+  border-radius: 6px;
+  background: none;
+}
+.note-card textarea {
+  display: block;
+  width: 100%;
+  resize: none;
+  font: 700 20px/1.4 "Hiragino Maru Gothic ProN", system-ui, sans-serif;
+  color: inherit;
+  background: #ffffffaa;
+  border: 2px dashed #2b1d00;
+  border-radius: 8px;
+  padding: 6px 8px;
+  outline: none;
+}
+
+/* ---- 4. 3D パネル ---- */
+.todo {
+  width: 380px;
+  height: 460px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #ffffff, #e9ecff);
+  color: #1c1f33;
+  font-size: 16px;
+}
+.todo h2 { margin: 0 0 12px; font-size: 24px; }
+.todo-form { display: flex; gap: 8px; }
+.todo-form input {
+  flex: 1;
+  font: inherit;
+  color: #1c1f33;
+  background: #fff;
+  padding: 6px 10px;
+  border: 2px solid #c5cae9;
+  border-radius: 8px;
+  outline: none;
+}
+.todo-form input:focus { border-color: #6a5cff; }
+.todo-form button, .todo-list button {
+  font: inherit;
+  color: #fff;
+  background: #6a5cff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.todo-list {
+  flex: 1;
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  overflow-y: auto;
+}
+.todo-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid #d5d9f0;
+}
+.todo-list li span { flex: 1; }
+.todo-list li.done span { text-decoration: line-through; color: #9097b8; }
+.todo-list input[type="checkbox"] { width: 18px; height: 18px; accent-color: #6a5cff; }
+.todo-list button { background: #ff4f9a; padding: 2px 10px; font-size: 14px; }
+.todo-count { margin: 8px 0 0; color: #6a6f8f; font-size: 13px; }
