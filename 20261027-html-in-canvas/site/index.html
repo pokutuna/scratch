@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HTML-in-Canvas Playground</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.20.0/matter.min.js"></script>
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js" } }
+  </script>
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+  <header>
+    <h1>HTML-in-Canvas Playground</h1>
+    <p class="lead">
+      <code>&lt;canvas&gt;</code> の子要素に置いた本物の HTML を、2D / WebGL のキャンバスに描き込むデモ集。
+      回転しても、歪んでも、3D 空間に浮かんでも、input には文字が打てるし、ボタンは押せる。
+    </p>
+    <div id="support" class="support">
+      <p id="support-msg"></p>
+      <div id="flags-guide" hidden>
+        <p>Chrome 156 以前でも、フラグを有効にすると試せます。</p>
+        <ol>
+          <li>
+            アドレスバーに <code>chrome://flags/#canvas-draw-element</code> を貼り付けて開く
+            <button type="button" id="copy-flag">コピー</button>
+          </li>
+          <li>ハイライトされた項目を <b>Enabled</b> にする</li>
+          <li>画面下の <b>Relaunch</b> で Chrome を再起動する</li>
+        </ol>
+        <p class="hint">
+          ページから <code>chrome://</code> へはリンクできないので、コピーして貼り付けてください。
+          Chrome 156 で動くことを確かめています。それより古い Chrome では API が違い、一部のデモが動かないことがあります。
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-demo="gravity" aria-selected="true">崩れる設定画面</button>
+    <button role="tab" data-demo="crt">CRT ターミナル</button>
+    <button role="tab" data-demo="kaleido">万華鏡メモ</button>
+    <button role="tab" data-demo="panel3d">3D パネル</button>
+  </nav>
+
+  <main>
+    <!-- 1. 2D + Matter.js -->
+    <section id="gravity" class="demo" role="tabpanel">
+      <div class="toolbar">
+        <button id="gravity-drop" class="primary">崩す</button>
+        <button id="gravity-shake">揺らす</button>
+        <button id="gravity-reset">元に戻す</button>
+        <span class="hint">崩れた後も入力・クリックできる。部品の余白をつかむとドラッグできる</span>
+      </div>
+      <canvas id="gravity-canvas" class="stage" content="drawable" layoutsubtree>
+        <div drawable class="piece title">⚙️ 設定</div>
+        <label drawable class="piece row">名前 <input id="g-name" value="ななし" size="12"></label>
+        <label drawable class="piece row"><input type="checkbox" checked> 通知を受け取る</label>
+        <label drawable class="piece row">音量 <input id="g-volume" type="range" min="0" max="100" value="40"> <output id="g-volume-out">40</output></label>
+        <label drawable class="piece row">テーマ
+          <select><option>ライト</option><option selected>ダーク</option><option>ネオン</option></select>
+        </label>
+        <div drawable class="piece row">
+          <label><input type="radio" name="g-size" checked> 小</label>
+          <label><input type="radio" name="g-size"> 中</label>
+          <label><input type="radio" name="g-size"> 大</label>
+        </div>
+        <label drawable class="piece row">色 <input type="color" value="#ff4f9a"></label>
+        <div drawable class="piece row"><button id="g-flip">🙃 重力を反転</button></div>
+        <div drawable class="piece row"><button id="g-save" class="save">保存</button> <span id="g-saved"></span></div>
+      </canvas>
+      <p class="note">
+        2D コンテキストの <code>drawElementImage()</code> で、物理演算 (Matter.js) の剛体の位置と角度どおりに各要素を描く。
+        描くとヒットテスト用のジオメトリも自動で更新されるので、傾いたままの input やボタンをそのまま操作できる。
+      </p>
+    </section>
+
+    <!-- 2. raw WebGL2 shader -->
+    <section id="crt" class="demo" role="tabpanel" hidden>
+      <div class="toolbar">
+        <label>歪み <input id="crt-curve" type="range" min="0" max="100" value="45"></label>
+        <label>グリッチ <input id="crt-glitch" type="range" min="0" max="100" value="8"></label>
+        <span class="hint"><code>help</code> と打ってみる</span>
+      </div>
+      <canvas id="crt-canvas" class="stage" content="drawable" layoutsubtree>
+        <div drawable id="term" class="term">
+          <div id="term-out" class="term-out"></div>
+          <form id="term-form" class="term-line">
+            <span class="term-prompt">guest@canvas:~$</span>
+            <input id="term-in" autocomplete="off" spellcheck="false" aria-label="コマンド">
+          </form>
+        </div>
+      </canvas>
+      <p class="note">
+        ターミナルは普通の HTML。WebGL の <code>texElementSubImage2D()</code> でテクスチャにして、
+        ブラウン管風のシェーダ (樽型歪み、走査線、色収差、ノイズ) を通して表示している。
+        キャレットの点滅も、入力した文字も、そのまま歪んだ画面に映る。
+      </p>
+    </section>
+
+    <!-- 3. 2D kaleidoscope -->
+    <section id="kaleido" class="demo" role="tabpanel" hidden>
+      <div class="toolbar">
+        <label>分割数 <input id="kaleido-n" type="range" min="3" max="16" value="8"> <output id="kaleido-n-out">8</output></label>
+        <label><input id="kaleido-spin" type="checkbox" checked> 回転</label>
+        <span class="hint">中央のメモを編集すると模様が変わる</span>
+      </div>
+      <canvas id="kaleido-canvas" class="stage" content="drawable" layoutsubtree>
+        <div drawable id="note" class="note-card">
+          <div class="note-tools">
+            <button data-emoji="🌸">🌸</button>
+            <button data-emoji="🍣">🍣</button>
+            <button data-emoji="✨">✨</button>
+            <button data-emoji="🐙">🐙</button>
+            <input id="note-color" type="color" value="#ffe066" aria-label="背景色">
+          </div>
+          <textarea id="note-text" rows="4" spellcheck="false" aria-label="メモ">ここに何か打つと
+万華鏡になる 🌀
+HTML-in-Canvas!</textarea>
+        </div>
+      </canvas>
+      <p class="note">
+        同じ要素を <code>drawElementImage()</code> で何度も描ける。鏡像のコピーは
+        <code>{ preserveElementGeometry: true }</code> を付けてヒットテストに影響させず、
+        最後に中央へ描く 1 枚だけを操作対象にしている。
+      </p>
+    </section>
+
+    <!-- 4. three.js -->
+    <section id="panel3d" class="demo" role="tabpanel" hidden>
+      <div class="toolbar">
+        <span class="hint">マウスに合わせてパネルが傾く。傾いたままでも ToDo を追加・チェック・削除できる</span>
+      </div>
+      <canvas id="panel3d-canvas" class="stage" content="drawable" layoutsubtree>
+        <div drawable id="todo" class="todo">
+          <h2>📝 ToDo</h2>
+          <form id="todo-form" class="todo-form">
+            <input id="todo-in" placeholder="やることを追加" aria-label="やること">
+            <button>追加</button>
+          </form>
+          <ul id="todo-list" class="todo-list"></ul>
+          <p id="todo-count" class="todo-count"></p>
+        </div>
+      </canvas>
+      <p class="note">
+        three.js のシーンに浮かぶ板に HTML を貼っている。テクスチャは <code>texElementSubImage2D()</code> で自前で更新し、
+        要素→板→カメラ→画面の変換を 4x4 行列のまま <code>updateElementGeometry()</code> に渡すので、
+        遠近感のついた板の上でもクリック位置がずれない。
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <a href="https://developer.chrome.com/docs/web-platform/html-in-canvas">Chrome for Developers: HTML-in-Canvas</a> ·
+    <a href="https://github.com/WICG/html-in-canvas">WICG/html-in-canvas</a>
+  </footer>
+</body>
+</html>
