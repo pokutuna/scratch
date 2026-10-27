@@ -1,0 +1,16 @@
+# 各エントリの依存・キャッシュ
+node_modules/
+.venv/
+__pycache__/
+.cache/
+dist/
+
+# secret
+.env
+.env.*
+!.env.example
+
+# .github/scripts/build-pages.mjs の出力
+/_site/
+
+.DS_Store

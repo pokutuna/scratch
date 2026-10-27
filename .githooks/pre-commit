@@ -1,0 +1,16 @@
+#!/bin/sh
+# 有効化: git config core.hooksPath .githooks
+set -eu
+
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks git --pre-commit --staged --redact --no-banner --verbose --log-level warn
+  # 個人情報や仕事に関する語のルール。語そのものを公開しないよう、リポジトリの外に置く
+  private_config="${SCRATCH_GITLEAKS_CONFIG:-$HOME/.config/scratch/gitleaks.toml}"
+  if [ -f "$private_config" ]; then
+    gitleaks git --pre-commit --staged --redact --no-banner --verbose --log-level warn --config "$private_config"
+  fi
+else
+  echo "warning: gitleaks がないため secret の検査をスキップした (brew install gitleaks)" >&2
+fi
+
+node .github/scripts/check.mjs
