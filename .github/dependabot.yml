@@ -1,0 +1,17 @@
+# エントリの依存 (npm、pip など) は対象にしない。書き捨ての実験なので、更新を追いかけない
+# サプライチェーン攻撃への対策として、公開から 14 日経ったリリースだけを更新の PR にする。
+# 悪意のあるリリースが見つかって取り下げられるまでの時間を確保するため
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 14
+    commit-message:
+      prefix: "deps"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
