@@ -1,6 +1,6 @@
 # scratch
 
-https://pokutuna.github.io/scratch/yyyymmdd-slug/
+https://pokutuna.github.io/scratch/
 
 見かけた技術やライブラリを雑に試す & 置いておくリポジトリ
 
