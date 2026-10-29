@@ -55,8 +55,22 @@ h1 {
 }
 
 header p {
+  max-width: 640px;
   margin: 4px 0 0;
   color: var(--muted);
+}
+
+header a {
+  color: inherit;
+  pointer-events: auto;
+}
+
+header .about {
+  color: var(--fg);
+}
+
+.hint {
+  font-size: 12px;
 }
 
 #panel {
@@ -119,9 +133,13 @@ button {
 }
 
 .legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
   margin: 0;
   color: var(--muted);
   font-size: 12px;
+  white-space: nowrap;
 }
 
 .credit {
@@ -138,13 +156,9 @@ button {
   display: inline-block;
   width: 10px;
   height: 10px;
-  margin: 0 4px 0 10px;
+  margin-right: 4px;
   border-radius: 2px;
   vertical-align: -1px;
-}
-
-.swatch:first-child {
-  margin-left: 0;
 }
 
 .swatch.context {
