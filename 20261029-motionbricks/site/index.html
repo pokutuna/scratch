@@ -19,7 +19,19 @@
     <div id="view"></div>
     <header>
       <h1>MotionBricks Viewer</h1>
-      <p>MotionBricks が生成したモーション。ドラッグで回転、ホイールで拡大、右ドラッグで移動。</p>
+      <p>
+        <a href="https://nvlabs.github.io/motionbricks/">MotionBricks</a>
+        で生成したモーション。目標の姿勢の間を生成してつないでいる。
+      </p>
+      <p class="about" data-motion="photos">
+        photos: 自分の写真 4 枚 (片足立ち、あぐら、床に横座り、椅子でのけぞる) から
+        <a href="https://github.com/NVlabs/GEM-X">GEM-X</a>
+        で推定した姿勢を目標にした。間に、立った姿勢と椅子に座った姿勢も入れている。
+      </p>
+      <p class="about" data-motion="tour" hidden>
+        tour: MotionBricks に付属するサンプル (ゾンビ歩き、スキップ、走り、しゃがみ) から取り出した姿勢を目標にした。サンプルの再生ではなく、間の動きは生成したもの。
+      </p>
+      <p class="hint">ドラッグで回転、ホイールで拡大、右ドラッグで移動。</p>
     </header>
     <div id="panel">
       <div class="row">
@@ -50,14 +62,13 @@
         <label><input id="trail" type="checkbox" /> 腰の軌跡</label>
       </div>
       <p class="legend">
-        <span class="swatch context"></span>最初の文脈
-        <span class="swatch generated"></span>生成
-        <span class="swatch target"></span>向かっている目標
+        <span><span class="swatch context"></span>開始の姿勢 (サンプルから)</span>
+        <span><span class="swatch generated"></span>生成した動き</span>
+        <span><span class="swatch target"></span>向かっている目標の姿勢</span>
       </p>
       <p class="credit">
-        <span>モデル (CC0、<a href="https://github.com/ToxSam/osa-gallery">Open Source Avatars</a>):</span>
-        <span>Froggy by <a href="https://www.polygonalmind.com/">Polygonal Mind</a>,</span>
-        <span>Possum Enjoyer by <a href="https://opensourceavatars.com/">opensourceavatars.com</a></span>
+        モデル: Froggy (<a href="https://www.polygonalmind.com/">Polygonal Mind</a>)、Possum Enjoyer。どちらも
+        <a href="https://opensourceavatars.com/">Open Source Avatars</a> で配布されている CC0 のもの。
       </p>
     </div>
     <script type="module" src="./main.js"></script>

@@ -53,10 +53,7 @@ make site
 python3 -m http.server -d site  # http://localhost:8000/ で確かめる
 ```
 
-VRM モデルは、[Open Source Avatars](https://github.com/ToxSam/osa-gallery) で配布されている CC0 のもの。
-
-- Froggy: [Polygonal Mind](https://www.polygonalmind.com/)
-- Possum Enjoyer: [opensourceavatars.com](https://opensourceavatars.com/)
+VRM モデルの Froggy ([Polygonal Mind](https://www.polygonalmind.com/)) と Possum Enjoyer は、どちらも [Open Source Avatars](https://opensourceavatars.com/) ([ToxSam/osa-gallery](https://github.com/ToxSam/osa-gallery)) で配布されている CC0 のもの。
 
 ## ファイル
 

@@ -200,6 +200,8 @@ function stepOf(f) {
 
 async function load(name) {
   motion = await (await fetch(`./motions/${name}.json`)).json();
+  for (const p of document.querySelectorAll(".about"))
+    p.hidden = p.dataset.motion !== name;
   for (const s of [body, ghost]) if (s) scene.remove(s.group);
   if (trail) scene.remove(trail);
 
@@ -264,7 +266,7 @@ function show() {
   $("time").textContent = `${(f / motion.fps).toFixed(2)} s`;
   $("step").textContent = inStep
     ? `${step + 1}/${motion.labels.length} ${motion.labels[step]}`
-    : "文脈";
+    : "開始";
 }
 
 function tick(now) {
