@@ -1,2 +1,5 @@
 out/
 *_output.ipynb
+input/
+gem-x/
+poses/

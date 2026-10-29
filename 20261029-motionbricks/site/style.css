@@ -1,0 +1,160 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f4f4f2;
+  --fg: #1f2328;
+  --muted: #6b7280;
+  --panel: rgb(255 255 255 / 0.85);
+  --border: rgb(0 0 0 / 0.1);
+  --context: #16a34a;
+  --generated: #2563eb;
+  --target: #f59e0b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171a;
+    --fg: #e6e6e6;
+    --muted: #9ca3af;
+    --panel: rgb(30 32 36 / 0.85);
+    --border: rgb(255 255 255 / 0.12);
+    --context: #4ade80;
+    --generated: #60a5fa;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.5 system-ui, sans-serif;
+}
+
+#view {
+  position: fixed;
+  inset: 0;
+}
+
+header {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  pointer-events: none;
+}
+
+h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+#panel {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  backdrop-filter: blur(8px);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.options {
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+#step {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#seek {
+  flex: 1;
+  min-width: 0;
+}
+
+#time {
+  min-width: 4.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+button,
+select {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+button {
+  width: 36px;
+  cursor: pointer;
+}
+
+.legend {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.credit {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.credit a {
+  color: inherit;
+}
+
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin: 0 4px 0 10px;
+  border-radius: 2px;
+  vertical-align: -1px;
+}
+
+.swatch:first-child {
+  margin-left: 0;
+}
+
+.swatch.context {
+  background: var(--context);
+}
+
+.swatch.generated {
+  background: var(--generated);
+}
+
+.swatch.target {
+  background: var(--target);
+}

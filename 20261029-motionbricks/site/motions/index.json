@@ -1,0 +1,12 @@
+[
+  {
+    "name": "photos",
+    "frames": 336,
+    "fps": 30.0
+  },
+  {
+    "name": "tour",
+    "frames": 254,
+    "fps": 30.0
+  }
+]
