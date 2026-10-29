@@ -1,0 +1,10 @@
+{
+  "start": {"clip": "locomotion/idle/idle_loop_001__A268", "time": 1.0},
+  "steps": [
+    {"clip": "variations/zombie_walk_180_R_003__A330", "time": 2.0, "forward": 2.0},
+    {"clip": "variations/skipping_R_002__A360", "time": 2.0, "forward": 2.5, "turn": 90},
+    {"clip": "locomotion/bs_1d_linear/run_loop_180_R_003__A326", "time": 1.5, "forward": 3.0, "turn": 90},
+    {"clip": "locomotion/idle/crouch_idle_001__A529", "time": 1.0, "forward": 2.0, "targets": 1},
+    {"clip": "locomotion/idle/idle_loop_001__A268", "time": 1.0, "forward": 0.5, "turn": 180, "targets": 1}
+  ]
+}
