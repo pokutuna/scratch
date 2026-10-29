@@ -1,0 +1,11 @@
+{
+  "start": {"clip": "locomotion/idle/idle_loop_001__A268", "time": 1.0},
+  "steps": [
+    {"pose": "one_leg", "forward": 0.3},
+    {"pose": "cross_legged", "pitch": -25, "tokens": [12, 16]},
+    {"pose": "floor_side", "pitch": 0, "tokens": [12, 16]},
+    {"clip": "locomotion/idle/idle_loop_001__A268", "time": 2.0, "tokens": [14, 16]},
+    {"clip": "sitting/sit_on_chair_loop", "time": 1.0, "forward": 1.0, "turn": 180},
+    {"pose": "chair_arch", "pitch": -30, "tokens": [12, 16]}
+  ]
+}
