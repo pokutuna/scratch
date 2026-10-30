@@ -1,0 +1,13 @@
+{
+  "start": {"clip": "locomotion/idle/idle_loop_001__A268", "time": 1.0},
+  "steps": [
+    {"pose": "arms_up", "forward": 0.3},
+    {"pose": "side_bend_right", "tokens": [10, 14]},
+    {"pose": "arms_up", "tokens": [10, 14]},
+    {"pose": "side_bend_left", "tokens": [10, 14]},
+    {"pose": "arms_up", "tokens": [10, 14]},
+    {"pose": "forward_bend", "tokens": [12, 16]},
+    {"pose": "back_arch", "tokens": [12, 16]},
+    {"clip": "locomotion/idle/idle_loop_001__A268", "time": 2.0, "tokens": [12, 16]}
+  ]
+}

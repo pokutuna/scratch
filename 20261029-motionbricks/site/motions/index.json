@@ -5,6 +5,11 @@
     "fps": 30.0
   },
   {
+    "name": "stretch",
+    "frames": 428,
+    "fps": 30.0
+  },
+  {
     "name": "tour",
     "frames": 254,
     "fps": 30.0
