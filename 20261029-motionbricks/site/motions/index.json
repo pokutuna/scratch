@@ -1,7 +1,17 @@
 [
   {
+    "name": "kamae",
+    "frames": 278,
+    "fps": 30.0
+  },
+  {
     "name": "photos",
     "frames": 336,
+    "fps": 30.0
+  },
+  {
+    "name": "stretch",
+    "frames": 428,
     "fps": 30.0
   },
   {
