@@ -1,0 +1,10 @@
+{
+  "start": {"clip": "locomotion/idle/idle_loop_001__A268", "time": 1.0},
+  "steps": [
+    {"pose": "knee_raise", "forward": 0.3, "tokens": [12, 16]},
+    {"pose": "lunge", "tokens": [12, 16]},
+    {"pose": "wings", "tokens": [12, 16]},
+    {"pose": "knee_raise", "tokens": [12, 16]},
+    {"clip": "locomotion/idle/idle_loop_001__A268", "time": 2.0, "tokens": [12, 16]}
+  ]
+}
