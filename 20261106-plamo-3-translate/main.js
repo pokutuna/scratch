@@ -44,9 +44,20 @@ const nextLang = () =>
 
 addStep("ja");
 $("add-step").onclick = () => addStep(nextLang());
+// ひらがなかカタカナがあれば日本語とみなす。漢字だけでは中国語と区別できない
+const isJapanese = (text) => /[぀-ヿ]/.test(text);
+
+// 多段翻訳をオンにしたとき、段が 1 つだけなら原文に合わせて往復する 2 段にする。
+// 日本語なら 英語 → 日本語、それ以外なら 日本語 → 原文の言語 (指定がなければ英語)。
+// 2 段目以降があるときは、選び直した言語を上書きしない
 $("multi").onchange = () => {
   document.body.classList.toggle("multi", $("multi").checked);
-  if ($("multi").checked && steps().length === 1) addStep(nextLang());
+  if (!$("multi").checked || steps().length > 1) return;
+  const [first, second] = isJapanese($("input").value)
+    ? ["en", "ja"]
+    : ["ja", $("source-lang").value || "en"];
+  steps()[0].querySelector(".lang").value = first;
+  addStep(second);
 };
 
 const wllama = new Wllama(
