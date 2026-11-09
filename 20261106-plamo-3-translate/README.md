@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-開いたページで「ロード」を押してモデルを取得し、「翻訳」を押す。`npx vite build` で `site/` に出力する。
+開いたページで「モデルを読み込む」を押し、読み込みが終わったら「翻訳」を押す。`npx vite build` で `site/` に出力する。
 
 モデルは [PLaMo Community License](https://plamo.preferredai.jp/info/plamo-community-license-ja) で公開されている (個人・非商用は無料、商用は登録が要る)。このエントリはモデルを再配布せず、ページを開いた人のブラウザが Hugging Face から直接取得する。ページには「Built with PLaMo」、ライセンスへのリンク、PFN とは関係ない個人の試作であることを書いている。
 
