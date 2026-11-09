@@ -66,6 +66,11 @@
       button:hover:not(:disabled) { border-color: var(--accent); }
       button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
       button:disabled { opacity: 0.5; cursor: default; }
+      /* 案内を出している間も狭い画面で文字を折り返さないよう、翻訳ボタンごと次の行に送る */
+      .pane-head:has(> #translate) { flex-wrap: wrap; }
+      #translate { margin-left: auto; }
+      #translate-hint { white-space: nowrap; }
+      #translate-hint:empty { display: none; }
       button.small { padding: 2px 10px; font-size: 13px; }
       label { display: inline-flex; align-items: center; gap: 6px; }
 
@@ -160,7 +165,7 @@
           <option value="pfnet/plamo-3-translate-2b-GGUF|232fbd7916519edecddfdae0beae7e76fe70453f|plamo-3-translate-2b-Q4_K_M.gguf">2B Q4_K_M (1.8 GB)</option>
         </select>
         <label><input type="checkbox" id="gpu" checked /> WebGPU</label>
-        <button id="load">ロード</button>
+        <button id="load" class="primary">モデルを読み込む</button>
         <span id="status" class="muted"></span>
         <span class="spacer"></span>
         <span id="cache" class="muted"></span>
@@ -201,7 +206,8 @@
             <span class="title">原文</span>
             <span class="spacer"></span>
             <label class="muted"><input type="checkbox" id="multi" /> 多段翻訳</label>
-            <button id="translate" class="primary" disabled>翻訳</button>
+            <span id="translate-hint" class="muted">モデルを読み込んでください</span>
+            <button id="translate" title="モデルを読み込んでください" disabled>翻訳</button>
           </div>
           <textarea id="input" aria-label="原文">The meeting has been rescheduled to next Monday. Please make sure to update your calendar and let me know if the new time doesn't work for you.</textarea>
           <div class="pane-foot muted">Ctrl / ⌘ + Enter で翻訳</div>

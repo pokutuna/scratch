@@ -167,6 +167,46 @@ $("clear").onclick = async () => {
 };
 showCacheUsage();
 
+function selectedModel() {
+  const [repo, revision, file] = $("model").value.split("|");
+  return {
+    file,
+    url: `https://huggingface.co/${repo}/resolve/${revision}/${file}`,
+    cacheName: `${revision.slice(0, 7)}-${file}`,
+  };
+}
+
+// 選択中のモデルと WebGPU の組。読み込み済みの組と比べて、読み込み直しが要るかを判断する
+const selection = () => `${$("model").value}|${$("gpu").checked}`;
+let loadedSelection = null;
+let loadedStatus = "";
+let loading = false;
+
+// 次に押すボタンが分かるよう、読み込むまでは読み込みボタンを、読み込んだ後は翻訳ボタンを強調する
+function refreshLoadUI() {
+  const ready = loadedSelection !== null;
+  const current = selection() === loadedSelection;
+  $("load").textContent = current ? "読み込み済み" : "モデルを読み込む";
+  $("load").disabled = loading || current;
+  $("load").classList.toggle("primary", !ready);
+  $("translate").classList.toggle("primary", ready);
+  const hint = ready
+    ? ""
+    : loading
+      ? "モデルを読み込み中"
+      : "モデルを読み込んでください";
+  $("translate-hint").textContent = hint;
+  $("translate").title = hint;
+  if (ready) {
+    $("status").textContent = current
+      ? loadedStatus
+      : "変更を反映するには「モデルを読み込む」を押してください。";
+  }
+}
+$("model").onchange = refreshLoadUI;
+$("gpu").onchange = refreshLoadUI;
+refreshLoadUI();
+
 // wllama 3.8.1 が同梱する llama.cpp は plamo3 トークナイザ (ggml-org/llama.cpp#30045) より前の版で、
 // tokenizer.ggml.model = "plamo3" を読めない。同じ長さの "plamo2" に書き換えてヘッダのオフセットを保つ。
 // #30045 以前の llama.cpp と同じく、PLaMo 2 のトークナイザで分割される
@@ -188,25 +228,24 @@ async function patchTokenizer(blob) {
 }
 
 $("load").onclick = async () => {
-  $("load").disabled = true;
-  const [repo, revision, file] = $("model").value.split("|");
+  loading = true;
+  loadedSelection = null;
+  $("translate").disabled = true;
+  refreshLoadUI();
+  const selected = selection();
+  const { file, url, cacheName } = selectedModel();
   log(
     `navigator.gpu: ${"gpu" in navigator}, crossOriginIsolated: ${self.crossOriginIsolated}`,
   );
   const t0 = performance.now();
   try {
     if (wllama.isModelLoaded()) await wllama.exit();
-    const url = `https://huggingface.co/${repo}/resolve/${revision}/${file}`;
-    const blob = await fetchGguf(
-      url,
-      `${revision.slice(0, 7)}-${file}`,
-      (loaded, total) => {
-        $("status").textContent =
-          `ダウンロード ${Math.round((loaded / total) * 100)}%`;
-      },
-    );
+    const blob = await fetchGguf(url, cacheName, (loaded, total) => {
+      $("status").textContent =
+        `ダウンロード中 ${Math.round((loaded / total) * 100)}%`;
+    });
     const t1 = performance.now();
-    $("status").textContent = "ロード中";
+    $("status").textContent = "読み込み中";
     await wllama.loadModel([await patchTokenizer(blob)], {
       n_ctx: 4096,
       n_gpu_layers: $("gpu").checked ? 999 : 0,
@@ -215,18 +254,19 @@ $("load").onclick = async () => {
     if (!wllama.isModelLoaded()) throw new Error("model not loaded");
     const dl = ((t1 - t0) / 1000).toFixed(1);
     const ld = ((performance.now() - t1) / 1000).toFixed(1);
-    $("status").textContent =
-      `ロード完了 (取得 ${dl}s + ロード ${ld}s, threads=${wllama.getNumThreads()})`;
+    loadedStatus = `読み込み完了 (取得 ${dl}s + 読み込み ${ld}s, threads=${wllama.getNumThreads()})`;
+    loadedSelection = selected;
     log(
       `loaded ${file}: fetch ${dl}s, load ${ld}s, multithread=${wllama.isMultithread()}`,
     );
     $("translate").disabled = false;
     showCacheUsage();
   } catch (e) {
-    $("status").textContent = `失敗: ${e.message}`;
+    $("status").textContent = `読み込みに失敗しました: ${e.message}`;
     log(`[error] ${e.stack ?? e}`);
   } finally {
-    $("load").disabled = false;
+    loading = false;
+    refreshLoadUI();
   }
 };
 
@@ -280,7 +320,8 @@ $("translate").onclick = async () => {
   } catch (e) {
     log(`[error] ${e.stack ?? e}`);
   } finally {
-    for (const id of ["translate", "multi", "add-step"]) $(id).disabled = false;
+    for (const id of ["multi", "add-step"]) $(id).disabled = false;
+    $("translate").disabled = loadedSelection === null;
   }
 };
 
