@@ -1,0 +1,42 @@
+{
+  "prompt": "「{concept}」について、ソフトウェアエンジニア向けの解説ドキュメントを Markdown で書いてください。見出しで 4〜6 節に分け、全体で 2500〜3500 字程度にしてください。",
+  "models": [
+    {
+      "id": "opus",
+      "label": "Opus 5.5 (effort: medium)"
+    },
+    {
+      "id": "sonnet",
+      "label": "Sonnet 5.5 (effort: medium)"
+    }
+  ],
+  "runs": 3,
+  "concepts": [
+    {
+      "id": "event-sourcing",
+      "name": "イベントソーシング"
+    }
+  ],
+  "conditions": [
+    {
+      "id": "baseline",
+      "label": "指示なし",
+      "instruction": null,
+      "short": "指示なし"
+    },
+    {
+      "id": "wago",
+      "label": "和語を使うな",
+      "instruction": "和語を使うな、熟語とカタカナ語で説明しろ。",
+      "source": "https://x.com/odashi_t/status/2121040960767590881",
+      "short": "和語禁止"
+    },
+    {
+      "id": "joshi",
+      "label": "助詞・助動詞・接続詞を見直す",
+      "instruction": "助詞・助動詞・接続詞の使い方を見直して。",
+      "source": "https://x.com/sub_827/status/2119493058526085471",
+      "short": "助詞見直し"
+    }
+  ]
+}
