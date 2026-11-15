@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>短い指示と文章</title>
+<style>
+:root {
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --text: #1f1d1a;
+  --muted: #6b665e;
+  --border: #e3dfd6;
+  --accent: #2f5d8a;
+  --bar: #c9d6e3;
+  --wa: #f6d9a8;
+  --kan: #c7dcf2;
+  --gai: #cfe8c9;
+  --kon: #e6d3ef;
+  --fn: #f3c9c4;
+  --conj: #e09a8f;
+  --stiff: #b3261e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171614;
+    --surface: #211f1c;
+    --text: #ece8e1;
+    --muted: #a39d93;
+    --border: #3a3631;
+    --accent: #8fb6dd;
+    --bar: #3d5266;
+    --wa: #6b5124;
+    --kan: #284a6b;
+    --gai: #2f5a2a;
+    --kon: #523a5e;
+    --fn: #6a3530;
+    --conj: #94463b;
+    --stiff: #ff8a80;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171614; --surface: #211f1c; --text: #ece8e1; --muted: #a39d93; --border: #3a3631;
+  --accent: #8fb6dd; --bar: #3d5266; --wa: #6b5124; --kan: #284a6b; --gai: #2f5a2a;
+  --kon: #523a5e; --fn: #6a3530; --conj: #94463b; --stiff: #ff8a80;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  line-height: 1.7;
+}
+main { max-width: 1280px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 1.6rem; margin: 0 0 8px; }
+h2 { font-size: 1.15rem; margin: 40px 0 12px; }
+p { margin: 0 0 12px; }
+a { color: var(--accent); }
+.lead { color: var(--muted); max-width: 52em; }
+.conds { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin: 16px 0; }
+.cond { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: .9rem; }
+.cond b { display: block; }
+.cond q { quotes: "「" "」"; }
+.base-prompt { font-size: .85rem; color: var(--muted); background: var(--surface); border: 1px dashed var(--border); border-radius: 8px; padding: 8px 12px; }
+
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: .85rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 10px; border-bottom: 1px solid var(--border); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-weight: 600; color: var(--muted); }
+thead tr:first-child th { color: var(--text); }
+tbody tr:last-child td { border-bottom: 0; }
+td.v { position: relative; min-width: 76px; }
+td.v span.bar { position: absolute; left: 6px; bottom: 4px; height: 3px; background: var(--bar); border-radius: 2px; }
+td.sep, th.sep { border-left: 1px solid var(--border); }
+.note { font-size: .8rem; color: var(--muted); margin-top: 8px; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-bottom: 16px; font-size: .9rem; }
+.controls label { display: inline-flex; align-items: center; gap: 6px; }
+select, button { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; }
+button { cursor: pointer; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; border-right: 1px solid var(--border); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--bg); }
+
+.cols { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; min-width: 0; }
+.card h3 { margin: 0 0 6px; font-size: 1rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: .78rem; color: var(--muted); margin-bottom: 8px; font-variant-numeric: tabular-nums; }
+details { font-size: .8rem; color: var(--muted); margin-bottom: 8px; }
+details pre { white-space: pre-wrap; font-family: inherit; margin: 4px 0 0; padding: 8px; background: var(--bg); border-radius: 6px; }
+.text { font-size: .95rem; line-height: 1.85; }
+.text p, .text .li, .text blockquote { margin: 0 0 10px; }
+.text .h { font-weight: 700; line-height: 1.5; margin: 18px 0 8px; }
+.text .h1 { font-size: 1.2rem; }
+.text .h2 { font-size: 1.08rem; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
+.text .h3, .text .h4 { font-size: 1rem; }
+.text > :first-child { margin-top: 0; }
+.text .li { position: relative; padding-left: 1.4em; margin-bottom: 4px; }
+.text .li::before { content: attr(data-marker); position: absolute; left: 0; color: var(--muted); }
+.text blockquote { border-left: 3px solid var(--border); padding-left: 10px; color: var(--muted); }
+.text pre { font-size: .8rem; line-height: 1.5; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px; overflow-x: auto; margin: 0 0 10px; }
+.text table { font-size: .8rem; margin: 0 0 10px; }
+.text td, .text th { white-space: normal; text-align: left; vertical-align: top; }
+.text hr { border: 0; border-top: 1px solid var(--border); margin: 12px 0; }
+.text .t-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85em; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0 3px; }
+.text .b { font-weight: 700; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .8rem; color: var(--muted); margin: -4px 0 12px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; }
+
+.mode-goshu .t-wa { background: var(--wa); }
+.mode-goshu .t-kan { background: var(--kan); }
+.mode-goshu .t-gai { background: var(--gai); }
+.mode-goshu .t-kon { background: var(--kon); }
+.mode-func .t-fn { background: var(--fn); }
+.mode-func .t-conj { background: var(--conj); font-weight: 600; }
+.stiff { color: var(--stiff); font-size: .78rem; }
+.blind .reveal-only { display: none; }
+
+.cols .text .mk { background: color-mix(in srgb, var(--stiff) 22%, transparent); text-decoration: underline wavy var(--stiff); text-underline-offset: 4px; cursor: pointer; }
+#mark-btn { position: absolute; z-index: 10; background: var(--accent); color: var(--bg); border: 0; padding: 4px 12px; box-shadow: 0 2px 8px rgb(0 0 0 / .25); }
+.card-foot { display: flex; justify-content: space-between; gap: 8px; font-size: .8rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
+.card-foot label { display: inline-flex; align-items: center; gap: 4px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+.btn { font-size: 1rem; border: 1px solid var(--border); background: var(--surface); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+td.marks-list { white-space: normal; text-align: left; min-width: 16em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>短い指示で Claude の日本語は変わるか</h1>
+  <p class="lead">
+    Claude の日本語の言い回しは、一言添えるだけで直るという意見がある。
+    <a href="https://x.com/odashi_t/status/2121040960767590881">「和語を使うな、熟語とカタカナ語で説明しろ」</a> と
+    <a href="https://x.com/sub_827/status/2119493058526085471">「助詞・助動詞・接続詞の使い方を見直して」</a> の 2 つを、
+    実行者の Claude Code の設定 (CLAUDE.md、スキル、プラグイン) を読まない <code>claude -p</code> に渡して確かめた。
+    <span id="design"></span>
+    文章の良し悪しは本文を読んで比べる。気になる表現にマークを付け、条件ごとに数えられる。
+  </p>
+  <div class="base-prompt" id="base-prompt"></div>
+  <div class="conds" id="conds"></div>
+
+  <h2>本文を並べて読む</h2>
+  <div class="controls">
+    <label>概念 <select id="concept"></select></label>
+    <label>モデル <select id="model"></select></label>
+    <span>回 <span class="seg" id="run"></span></span>
+    <label>色分け
+      <select id="mode">
+        <option value="none">なし</option>
+        <option value="goshu">語種</option>
+        <option value="func">助詞・助動詞・接続詞</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="blind"> 条件を隠して読む</label>
+    <button id="reveal" hidden>条件を表示</button>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div class="cols" id="cols"></div>
+
+  <h2>マークした表現</h2>
+  <p class="note">
+    本文の一部を選択して「マーク」を押すと、気になる表現として記録する。マークをクリックすると外せる。
+    集計には、カードの「読んだ」にチェックを入れた本文だけを使う。マークすると「読んだ」にも自動でチェックが入る。
+    記録はこのブラウザにだけ保存されるので、残すときは書き出す。
+  </p>
+  <div class="tools">
+    <button id="export">書き出す</button>
+    <label class="btn">読み込む<input type="file" id="import" accept="application/json" hidden></label>
+    <button id="clear">すべて消す</button>
+  </div>
+  <p class="note" id="marks-hidden" hidden>条件を隠している間は集計を表示しない。</p>
+  <div class="table-wrap"><table id="marks"></table></div>
+
+  <h2>文体の指標 (参考)</h2>
+  <p class="note">
+    形態素解析で数えた文体の特徴で、文章の良し悪しは表さない。指示で語の選び方や文の長さ、文体がどう動いたかを見るための参考として置いている。
+  </p>
+  <div class="table-wrap"><table id="summary"></table></div>
+  <p class="note">
+    <span id="summary-n"></span>バーは行内の最大値に対する比。
+    語や文の指標は地の文 (段落、箇条書きの項目、引用) で数え、見出し、コード、表は除いた。語種は UniDic (unidic-lite) の語種情報を使い、助詞・助動詞・記号を除いた語で数えた。
+    です・ます調の文では「です」「ます」も助動詞に数えるため、文体が変わると助動詞の数も変わる。
+  </p>
+</main>
+<button id="mark-btn" hidden>マーク</button>
+<script src="data.js"></script>
+<script>
+const METRICS = [
+  ["chars", "文字数", 0],
+  ["sentences", "文の数", 0],
+  ["chars_per_sentence", "1 文の平均文字数", 1],
+  ["wa_ratio", "和語の割合", "%"],
+  ["kan_ratio", "漢語の割合", "%"],
+  ["gai_ratio", "外来語の割合", "%"],
+  ["particles_per_sentence", "1 文あたりの助詞", 2],
+  ["aux_per_sentence", "1 文あたりの助動詞", 2],
+  ["conj_per_sentence", "1 文あたりの接続詞", 2],
+  ["desu_masu_ratio", "です・ます調の文の割合", "%"],
+  ["stiff_per_1k", "硬い漢語述語 (1000 字あたり)", 2],
+  ["headings", "見出しの数", 1],
+  ["list_items", "箇条書きの項目数", 1],
+  ["list_ratio", "地の文に占める箇条書きの割合", "%"],
+  ["bold_per_1k", "太字 (1000 字あたり)", 2],
+  ["code_blocks", "コードブロックの数", 1],
+  ["tables", "表の数", 1],
+];
+const LEGENDS = {
+  none: [],
+  goshu: [["wa", "和語"], ["kan", "漢語"], ["gai", "外来語"], ["kon", "混種語"]],
+  func: [["fn", "助詞・助動詞"], ["conj", "接続詞"]],
+};
+const fmt = (v, d) => d === "%" ? (v * 100).toFixed(1) + "%" : v.toFixed(d);
+const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+const el = (tag, attrs = {}, ...children) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) k === "class" ? (e.className = v) : e.setAttribute(k, v);
+  for (const c of children) e.append(c);
+  return e;
+};
+function store(k, v) {
+  try { v === undefined ? (v = localStorage.getItem(k)) : localStorage.setItem(k, v); } catch { return null; }
+  return v;
+}
+
+const state = { concept: null, model: null, run: 1, mode: "none", blind: false, revealed: false, order: [0, 1, 2] };
+
+// マークと「読んだ」の記録。localStorage が使えない環境では、このページを開いている間だけ保持する
+const ANN_STORE = "hints.marks.v2";
+let ann = loadAnn();
+function loadAnn() {
+  try {
+    const v = JSON.parse(localStorage.getItem(ANN_STORE));
+    if (v && Array.isArray(v.marks)) return { marks: v.marks, read: v.read || [] };
+  } catch {}
+  return { marks: [], read: [] };
+}
+function saveAnn() {
+  try { localStorage.setItem(ANN_STORE, JSON.stringify(ann)); } catch {}
+}
+function setRead(key, on) {
+  ann.read = ann.read.filter((k) => k !== key);
+  if (on) ann.read.push(key);
+  saveAnn();
+}
+const keyOf = (t) => `${t.model}/${t.concept}/${t.condition}/${t.n}`;
+
+// トークン列を要素 e の中に描画する。マークの境界でトークンを分割する
+function renderTokens(e, tokens, marks) {
+  let pos = 0;
+  for (const [s, cls, bold] of tokens) {
+    const cuts = new Set([0, s.length]);
+    for (const m of marks) for (const b of [m.start, m.end]) if (b > pos && b < pos + s.length) cuts.add(b - pos);
+    const cs = [...cuts].sort((a, b) => a - b);
+    for (let i = 0; i < cs.length - 1; i++) {
+      const at = pos + cs[i];
+      const m = marks.find((m) => m.start <= at && at < m.end);
+      const span = el("span", { class: "t-" + cls + (bold ? " b" : "") + (m ? " mk" : "") }, s.slice(cs[i], cs[i + 1]));
+      if (m) { span.dataset.id = m.id; span.title = "クリックでマークを外す"; }
+      e.append(span);
+    }
+    pos += s.length;
+  }
+  return e;
+}
+
+// Markdown のブロックを描画する。マークを付けられるのは、トークン列を持つブロック (見出し、段落、項目、引用)
+function renderBlocks(blocks, key, marks) {
+  const body = el("div", { class: "text" });
+  const counters = [];
+  blocks.forEach((b, i) => {
+    if (b.type !== "li") counters.length = 0;
+    let e;
+    if (b.type === "h") e = el("div", { class: `h h${Math.min(b.level, 4)}` });
+    else if (b.type === "p") e = el("p");
+    else if (b.type === "quote") e = el("blockquote");
+    else if (b.type === "li") {
+      counters.length = b.depth + 1;
+      counters[b.depth] = (counters[b.depth] || 0) + 1;
+      e = el("div", { class: "li", style: `margin-left:${b.depth * 1.4}em`, "data-marker": b.ordered ? counters[b.depth] + "." : "・" });
+    } else if (b.type === "code") e = el("pre", {}, el("code", {}, b.text));
+    else if (b.type === "hr") e = el("hr");
+    else if (b.type === "table") {
+      const [head, ...rows] = b.rows;
+      e = el("div", { class: "table-wrap" }, el("table", {},
+        el("thead", {}, el("tr", {}, ...(head || []).map((c) => el("th", {}, c)))),
+        el("tbody", {}, ...rows.map((r) => el("tr", {}, ...r.map((c) => el("td", {}, c)))))));
+    }
+    if (b.tokens) {
+      renderTokens(e, b.tokens, marks.filter((m) => m.block === i));
+      e.dataset.key = key;
+      e.dataset.block = i;
+    }
+    body.append(e);
+  });
+  return body;
+}
+
+if (window.DATA) init(window.DATA);
+else document.getElementById("cols").replaceChildren(el("p", { class: "note" },
+  "data.js を読めなかったので本文を表示できない。index.html と同じディレクトリの data.js を読める形で開く (例: make serve で http://localhost:8765/ を開く)。"));
+
+function init(data) {
+  const { experiment: exp, texts } = data;
+  const cond = Object.fromEntries(exp.conditions.map((c) => [c.id, c]));
+
+  document.getElementById("design").textContent =
+    `モデルは ${exp.models.map((m) => m.label).join(" と ")}、概念は ${exp.concepts.map((c) => c.name).join("、")}、` +
+    `指示なしと 2 つの指示それぞれで ${exp.runs} 回ずつ、計 ${texts.length} 本を生成した。`;
+  document.getElementById("base-prompt").textContent =
+    "共通のプロンプト: " + exp.prompt.replace("{concept}", "(概念)");
+  const conds = document.getElementById("conds");
+  for (const c of exp.conditions) {
+    conds.append(el("div", { class: "cond" },
+      el("b", {}, c.label),
+      c.instruction ? el("span", {}, "末尾に ", el("q", {}, c.instruction), " を足す") : "共通のプロンプトだけ"));
+  }
+
+  // 指標の平均
+  const table = document.getElementById("summary");
+  const head1 = el("tr", {}, el("th"));
+  const head2 = el("tr", {}, el("th", {}, "指標"));
+  const groups = [];
+  for (const m of exp.models) {
+    head1.append(el("th", { colspan: exp.conditions.length, class: "sep", style: "text-align:center" }, m.label));
+    exp.conditions.forEach((c, i) => {
+      head2.append(el("th", i === 0 ? { class: "sep" } : {}, c.short));
+      groups.push(texts.filter((t) => t.model === m.id && t.condition === c.id));
+    });
+  }
+  const thead = el("thead", {}, head1, head2);
+  const tbody = el("tbody");
+  for (const [key, label, d] of METRICS) {
+    const vals = groups.map((g) => mean(g.map((t) => t.metrics[key])));
+    const max = Math.max(...vals) || 1;
+    const tr = el("tr", {}, el("td", {}, label));
+    vals.forEach((v, i) => {
+      const td = el("td", { class: "v" + (i % exp.conditions.length === 0 ? " sep" : "") }, fmt(v, d));
+      td.append(el("span", { class: "bar", style: `width:calc((100% - 12px) * ${v / max})` }));
+      tr.append(td);
+    });
+    tbody.append(tr);
+  }
+  table.append(thead, tbody);
+  document.getElementById("summary-n").textContent =
+    `各セルは ${exp.concepts.length > 1 ? exp.concepts.length + " 概念 × " : ""}${exp.runs} 回 = ${groups[0].length} 本の平均。`;
+
+  // 本文の比較
+  const sel = (id, items) => {
+    const s = document.getElementById(id);
+    for (const it of items) s.append(el("option", { value: it.id }, it.name || it.label));
+    const saved = store("hints." + id);
+    if (saved && items.some((it) => it.id === saved)) s.value = saved;
+    state[id] = s.value;
+    s.addEventListener("change", () => { state[id] = s.value; store("hints." + id, s.value); selectionChanged(); });
+  };
+  sel("concept", exp.concepts);
+  if (exp.concepts.length < 2) document.getElementById("concept").parentElement.hidden = true;
+  sel("model", exp.models);
+
+  const runSeg = document.getElementById("run");
+  for (let n = 1; n <= exp.runs; n++) {
+    const b = el("button", { type: "button", "aria-pressed": String(n === state.run) }, String(n));
+    b.addEventListener("click", () => {
+      state.run = n;
+      for (const x of runSeg.children) x.setAttribute("aria-pressed", String(x === b));
+      selectionChanged();
+    });
+    runSeg.append(b);
+  }
+  const mode = document.getElementById("mode");
+  mode.addEventListener("change", () => { state.mode = mode.value; render(); });
+
+  const blind = document.getElementById("blind");
+  const reveal = document.getElementById("reveal");
+  blind.addEventListener("change", () => {
+    state.blind = blind.checked;
+    state.revealed = false;
+    state.order = state.blind ? shuffle([0, 1, 2]) : [0, 1, 2];
+    reveal.hidden = !state.blind;
+    render();
+  });
+  reveal.addEventListener("click", () => { state.revealed = true; reveal.hidden = true; render(); });
+
+  function render() {
+    const cols = document.getElementById("cols");
+    cols.className = "cols mode-" + state.mode + (state.blind && !state.revealed ? " blind" : "");
+    cols.replaceChildren();
+    const legend = document.getElementById("legend");
+    legend.replaceChildren(...LEGENDS[state.mode].map(([k, l]) =>
+      el("span", {}, el("i", { style: `background:var(--${k})` }), l)));
+
+    state.order.forEach((ci, pos) => {
+      const c = exp.conditions[ci];
+      const t = texts.find((x) => x.model === state.model && x.concept === state.concept && x.condition === c.id && x.n === state.run);
+      const m = t.metrics;
+      const hidden = state.blind && !state.revealed;
+      const title = hidden ? "文章 " + "ABC"[pos] : c.label + (state.blind ? ` (文章 ${"ABC"[pos]})` : "");
+      const chips = el("div", { class: "chips reveal-only" },
+        ...[`${m.chars} 字`, `${m.sentences} 文`, `1 文 ${m.chars_per_sentence} 字`,
+          `和語 ${fmt(m.wa_ratio, "%")}`, `漢語 ${fmt(m.kan_ratio, "%")}`, `です・ます ${fmt(m.desu_masu_ratio, "%")}`,
+          `見出し ${m.headings}`, `項目 ${m.list_items}`]
+          .map((s) => el("span", {}, s)));
+      const prompt = el("details", { class: "reveal-only" }, el("summary", {}, "プロンプト"), el("pre", {}, t.prompt));
+      const key = keyOf(t);
+      const body = renderBlocks(t.blocks, key, ann.marks.filter((m) => m.key === key));
+      const read = el("input", { type: "checkbox" });
+      read.checked = ann.read.includes(key);
+      read.addEventListener("change", () => { setRead(key, read.checked); renderMarks(); });
+      const n = ann.marks.filter((m) => m.key === key).length;
+      const foot = el("div", { class: "card-foot" }, el("label", {}, read, "読んだ"), el("span", {}, `マーク ${n} 件`));
+      const card = el("article", { class: "card" }, el("h3", {}, title), chips, prompt, body, foot);
+      if (t.stiff.length) card.append(el("div", { class: "stiff reveal-only" }, "硬い漢語述語: " + t.stiff.join("、")));
+      cols.append(card);
+    });
+    renderMarks();
+  }
+
+  // 表示する本文を変えたら、条件を隠している場合は並び順を引き直す
+  function selectionChanged() {
+    if (state.blind) {
+      state.order = shuffle([0, 1, 2]);
+      state.revealed = false;
+      reveal.hidden = false;
+    }
+    render();
+  }
+
+  function renderMarks() {
+    const table = document.getElementById("marks");
+    const hidden = state.blind && !state.revealed;
+    document.getElementById("marks-hidden").hidden = !hidden;
+    table.parentElement.hidden = hidden;
+    if (hidden) return;
+    const head = el("tr", {}, ...["モデル", "条件", "読んだ本数", "マーク数", "1000 字あたり", "マークした表現"].map((h) => el("th", {}, h)));
+    const tbody = el("tbody");
+    for (const m of exp.models) {
+      for (const c of exp.conditions) {
+        const ts = texts.filter((t) => t.model === m.id && t.condition === c.id);
+        const read = ts.filter((t) => ann.read.includes(keyOf(t)));
+        const keys = new Set(read.map(keyOf));
+        const ms = ann.marks.filter((x) => keys.has(x.key));
+        const chars = read.reduce((a, t) => a + t.metrics.chars, 0);
+        tbody.append(el("tr", {},
+          el("td", {}, m.label.split(" (")[0]),
+          el("td", {}, c.short),
+          el("td", {}, `${read.length} / ${ts.length}`),
+          el("td", {}, String(ms.length)),
+          el("td", {}, chars ? (ms.length * 1000 / chars).toFixed(2) : "-"),
+          el("td", { class: "marks-list" }, ms.map((x) => x.text).join("、"))));
+      }
+    }
+    table.replaceChildren(el("thead", {}, head), tbody);
+  }
+
+  // 選択範囲をブロック内の文字位置に変換し、「マーク」ボタンを出す
+  const markBtn = document.getElementById("mark-btn");
+  let pending = null;
+  const blockOf = (node) => (node.nodeType === 1 ? node : node.parentElement)?.closest(".text [data-block]");
+  document.addEventListener("selectionchange", () => {
+    const sel = getSelection();
+    const r = sel.rangeCount && !sel.isCollapsed ? sel.getRangeAt(0) : null;
+    const p = r && blockOf(r.startContainer);
+    if (!p || p !== blockOf(r.endContainer)) {
+      pending = null;
+      setTimeout(() => { if (!pending) markBtn.hidden = true; }, 300);
+      return;
+    }
+    const pre = document.createRange();
+    pre.setStart(p, 0);
+    pre.setEnd(r.startContainer, r.startOffset);
+    const raw = r.toString();
+    const text = raw.trim();
+    if (!text) return;
+    const start = pre.toString().length + (raw.length - raw.trimStart().length);
+    pending = { key: p.dataset.key, block: Number(p.dataset.block), start, end: start + text.length, text };
+    const rect = r.getBoundingClientRect();
+    markBtn.style.left = Math.max(8, Math.min(rect.left, innerWidth - 90)) + scrollX + "px";
+    markBtn.style.top = rect.bottom + scrollY + 6 + "px";
+    markBtn.hidden = false;
+  });
+  markBtn.addEventListener("pointerdown", (e) => e.preventDefault());
+  markBtn.addEventListener("click", () => {
+    if (!pending) return;
+    ann.marks.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ...pending });
+    setRead(pending.key, true);
+    pending = null;
+    markBtn.hidden = true;
+    getSelection().removeAllRanges();
+    render();
+  });
+  document.getElementById("cols").addEventListener("click", (e) => {
+    const mk = e.target.closest(".mk");
+    if (!mk || !getSelection().isCollapsed) return;
+    ann.marks = ann.marks.filter((m) => m.id !== mk.dataset.id);
+    saveAnn();
+    render();
+  });
+
+  document.getElementById("export").addEventListener("click", () => {
+    const json = JSON.stringify({ version: 1, exported_at: new Date().toISOString(), ...ann }, null, 2);
+    const a = el("a", { href: URL.createObjectURL(new Blob([json], { type: "application/json" })), download: "marks.json" });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  });
+  document.getElementById("import").addEventListener("change", async (e) => {
+    const f = e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    let v;
+    try { v = JSON.parse(await f.text()); } catch {}
+    if (!v || !Array.isArray(v.marks)) { alert("マークの JSON として読めませんでした"); return; }
+    if (!confirm(`今の記録を、読み込んだ ${v.marks.length} 件のマークで置き換えます`)) return;
+    ann = { marks: v.marks, read: v.read || [] };
+    saveAnn();
+    render();
+  });
+  document.getElementById("clear").addEventListener("click", () => {
+    if (!confirm("すべてのマークと「読んだ」の記録を消します")) return;
+    ann = { marks: [], read: [] };
+    saveAnn();
+    render();
+  });
+  render();
+}
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+</script>
+</body>
+</html>
