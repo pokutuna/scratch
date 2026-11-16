@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>静的な単語表による意味検索</title>
+<style>
+:root {
+  --bg: #fafaf8; --surface: #fff; --ink: #1f2937; --muted: #6b7280; --rule: #e3e5e8;
+  --accent: #0f766e; --chip: #f2f3f5; --unknown: #b45309;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1d22; --surface: #232830; --ink: #e5e7eb; --muted: #9aa3af; --rule: #353b45;
+    --accent: #2dd4bf; --chip: #2c323b; --unknown: #f0a82c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", sans-serif; line-height: 1.7;
+}
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+.lede { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+.lede p { margin: 0 0 6px; }
+.lede a { color: var(--accent); }
+input[type="search"] {
+  width: 100%; font: inherit; font-size: 17px; padding: 10px 14px;
+  border: 1.5px solid var(--rule); border-radius: 8px; background: var(--surface); color: var(--ink);
+}
+input[type="search"]:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+.controls { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin: 10px 0; font-size: 14px; }
+.modes { display: flex; gap: 4px; }
+.modes label {
+  padding: 2px 10px; border: 1.5px solid var(--rule); border-radius: 999px; cursor: pointer; color: var(--muted);
+}
+.modes input { display: none; }
+.modes input:checked + span { color: var(--accent); font-weight: 700; }
+.modes label:has(input:checked) { border-color: var(--accent); }
+.examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.examples button {
+  font: inherit; font-size: 13px; padding: 1px 10px; border: none; border-radius: 6px;
+  background: var(--chip); color: var(--ink); cursor: pointer;
+}
+.mode-help { font-size: 13px; color: var(--muted); margin: -4px 0 10px; }
+.examples button.more { background: none; color: var(--accent); }
+.tokens { font-size: 13px; color: var(--muted); min-height: 1.7em; margin: 4px 0 8px; }
+.tokens code { background: var(--chip); border-radius: 4px; padding: 0 5px; margin-right: 3px; }
+.tokens code.unknown { color: var(--unknown); text-decoration: line-through; }
+#status { color: var(--muted); font-size: 14px; }
+ol { list-style: none; padding: 0; margin: 0; }
+li { padding: 12px 0; border-bottom: 1px solid var(--rule); }
+li a { color: var(--accent); font-weight: 700; text-decoration: none; overflow-wrap: anywhere; }
+li a:hover { text-decoration: underline; }
+.snippet { margin: 2px 0; font-size: 14px; overflow-wrap: anywhere; }
+.meta { font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>静的な単語表による意味検索</h1>
+  <div class="lede">
+    <p><a href="https://github.com/GoogleChrome/modern-web-guidance-src">Modern Web Guidance</a> が npm パッケージとして配布している、ユーザーの手元で動く検索を参考に、同じ方式をブラウザだけで動くように実装したもの。</p>
+    <p>普通の意味検索は、文書もクエリも Embedding モデルに通してベクトルにする。ここでモデル (gemini-embedding-2) を使うのはビルド時だけで、文書を埋め込んでおく。検索時はクエリを語に分け、語ごとのベクトルを表から取り出して重み付きで足すだけで、クエリのベクトルを作る。この単語表は、足した結果が gemini-embedding-2 でクエリを埋め込んだ結果に近づくよう、事前に学習してある。モデルも API も呼ばないので、検索はブラウザの中で数 ms で終わり、クエリは外部に送られない。単語表で拾えない固有名詞などは BM25 で補い、2 つの順位を合成する。</p>
+    <p>題材は <a href="https://scrapbox.io/pokutuna/">pokutuna の Scrapbox</a> (2026-11-16 時点、1,361 ページ)。元の実装の解説は <a href="https://claude.ai/artifact/QprH698TqnQuDFNDyXwWT8">単語表だけで動く意味検索</a>、この実装の説明と結果は <a href="https://github.com/pokutuna/scratch/tree/main/20261116-static-embedding-search">README</a> にある。</p>
+  </div>
+  <input id="q" type="search" placeholder="検索語を入力" autocomplete="off" disabled>
+  <div class="controls">
+    <div class="modes" role="radiogroup" aria-label="検索方式">
+      <label title="ベクトルと BM25 の順位を RRF で合わせる"><input type="radio" name="mode" value="hybrid" checked><span>ハイブリッド</span></label>
+      <label title="単語表から作ったクエリのベクトルと、文書のベクトルの近さ。言い換えに強い"><input type="radio" name="mode" value="vector"><span>ベクトル</span></label>
+      <label title="クエリの語が文書に出てくるかどうか。固有名詞に強い"><input type="radio" name="mode" value="bm25"><span>BM25</span></label>
+    </div>
+    <span id="status">データを読み込み中 (約 7 MB)…</span>
+  </div>
+  <div class="mode-help" id="mode-help"></div>
+  <div class="examples" id="examples"></div>
+  <div class="tokens" id="tokens"></div>
+  <ol id="results"></ol>
+</main>
+<script type="module">
+import { load } from "./search.mjs";
+
+// 例のクエリ。表示のたびにランダムで EXAMPLE_COUNT 件出す。
+// 言い換え (単語表が効く) と、固有名詞や技術用語 (BM25 が効く) を混ぜ、上位に妥当なページが出るものだけを入れている
+const EXAMPLES = [
+  "相手を賢く見せる言葉", "動画をプログラムで作る", "会議音声 誰が話したか", "ピザ生地",
+  "食べ物の期限が切れても大丈夫か", "サラダにかけるもの", "口が寂しいときどうする", "服のサイズの測り方",
+  "コーヒー豆", "ロシアの観光地", "ゲームの撃ち合いでの動き方",
+  "英語の文法を学び直す", "チームが自分で動けるようにする", "コードの書き方の判断基準", "コミットメッセージの書き方",
+  "パスワードを比べるときの時間差攻撃", "外部からのリクエストで内部ネットワークに届く脆弱性", "コンテナの脆弱性スキャン",
+  "ログを表で集計したい", "Kubernetes のリソースを消す", "Go でリクエストをキャンセル",
+  "依存パッケージのバージョンを固定すべきか", "キーボードの押下を可視化",
+  "電子ペーパーで何か作る", "疎ベクトルで検索", "強化学習で言語モデルを調整",
+];
+const EXAMPLE_COUNT = 5;
+const $ = (id) => document.getElementById(id);
+const input = $("q");
+
+function render() {
+  const query = input.value.trim();
+  const checked = document.querySelector('input[name="mode"]:checked');
+  const mode = checked.value;
+  $("mode-help").textContent = checked.closest("label").title;
+  $("tokens").replaceChildren();
+  $("results").replaceChildren();
+  if (!query || !window.searcher) return;
+
+  const start = performance.now();
+  const { tokens, known, results } = window.searcher.search(query, { mode, limit: 20 });
+  const ms = performance.now() - start;
+
+  const knownSet = new Set(known);
+  $("tokens").append("語: ");
+  for (const t of tokens) {
+    const code = document.createElement("code");
+    code.textContent = t;
+    if (!knownSet.has(t)) {
+      code.className = "unknown";
+      code.title = "単語表にない語 (BM25 だけで使う)";
+    }
+    $("tokens").append(code);
+  }
+  $("tokens").append(` ${ms.toFixed(1)} ms`);
+
+  for (const r of results) {
+    const li = document.createElement("li");
+    const a = Object.assign(document.createElement("a"), { href: r.url, textContent: r.title, target: "_blank", rel: "noopener" });
+    const snippet = Object.assign(document.createElement("div"), { className: "snippet", textContent: r.snippet });
+    const meta = Object.assign(document.createElement("div"), {
+      className: "meta",
+      textContent: `${r.year} 年 · ベクトル ${r.vectorRank ?? "-"} 位 · BM25 ${r.bm25Rank ?? "-"} 位`,
+    });
+    li.append(a, snippet, meta);
+    $("results").append(li);
+  }
+  if (!results.length) $("results").textContent = "見つかりませんでした。";
+}
+
+function showExamples() {
+  // Fisher-Yates でシャッフルして先頭を使う
+  const pool = [...EXAMPLES];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const buttons = pool.slice(0, EXAMPLE_COUNT).map((q) => {
+    const b = Object.assign(document.createElement("button"), { type: "button", textContent: q });
+    b.onclick = () => { input.value = q; render(); };
+    return b;
+  });
+  const more = Object.assign(document.createElement("button"), { type: "button", className: "more", textContent: "別の例" });
+  more.onclick = showExamples;
+  $("examples").replaceChildren(...buttons, more);
+}
+showExamples();
+input.addEventListener("input", render);
+document.querySelectorAll('input[name="mode"]').forEach((el) => el.addEventListener("change", render));
+
+try {
+  const start = performance.now();
+  window.searcher = await load(async (name) => {
+    const res = await fetch(`data/${name}`);
+    if (!res.ok) throw new Error(`${name}: ${res.status}`);
+    return res.arrayBuffer();
+  });
+  const s = window.searcher;
+  $("status").textContent = `${s.pageCount} ページ、${s.chunkCount} チャンク、${s.vocabSize} 語 (${Math.round(performance.now() - start)} ms で読み込み)`;
+  input.disabled = false;
+  input.focus();
+  render();
+} catch (e) {
+  $("status").textContent = `読み込みに失敗しました: ${e.message}`;
+}
+</script>
+</body>
+</html>
