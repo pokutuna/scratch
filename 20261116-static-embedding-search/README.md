@@ -1,6 +1,14 @@
 # 静的な単語表による意味検索
 
-[Modern Web Guidance の検索](https://github.com/GoogleChrome/modern-web-guidance-src/tree/main/src/rag)と同じ方式 (Model2Vec / Tokenlearn による静的な単語表と BM25 の合成) を、自分で一から組んで試す。元の実装の解説は [単語表だけで動く意味検索: Modern Web Guidance の静的埋め込み検索](https://claude.ai/artifact/QprH698TqnQuDFNDyXwWT8) にまとめた。文書はビルド時に Embedding モデルで埋め込み、クエリは「単語ごとのベクトルの表」を引いて足すだけでベクトルにする。実行時にモデルが要らないので、検索をブラウザ (`site/`) だけで動かせる。
+[Modern Web Guidance](https://github.com/GoogleChrome/modern-web-guidance-src) は、Web 開発のガイドを npm パッケージとして配布していて、同梱の CLI によるガイドの検索はユーザーの手元で、API キーも Embedding モデルの推論もなしに動く。その[検索の仕組み](https://github.com/GoogleChrome/modern-web-guidance-src/tree/main/src/rag)を参考に、同じ方式を一から実装し、ブラウザだけで動く検索にした。元の実装の解説は [単語表だけで動く意味検索: Modern Web Guidance の静的埋め込み検索](https://claude.ai/artifact/QprH698TqnQuDFNDyXwWT8) にまとめた。
+
+方式の要点は、文書とクエリで埋め込み方を変えることにある。
+
+- 文書: ビルド時に Embedding モデル (教師モデル) で埋め込んでおく
+- クエリ: 「単語ごとのベクトルの表」を引いて重み付きで足すだけでベクトルにする。この表は、足した結果が教師モデルのクエリの埋め込みに近づくよう学習しておく ([Model2Vec](https://github.com/MinishLab/model2vec) と [Tokenlearn](https://github.com/MinishLab/tokenlearn) の手法)
+- 単語表で拾えない固有名詞などの一致は BM25 で補い、2 つの順位を RRF で合成する
+
+検索時に要るのは表の引き当てと内積だけなので、モデルを読み込まずに数 ms で検索できる。
 
 - 教師モデル: [cl-nagoya/ruri-v3-310m](https://huggingface.co/cl-nagoya/ruri-v3-310m) (ローカルで実行、768 次元、クエリには `検索クエリ: `、文書には `検索文書: ` を付ける)
 - データ (試すための題材): 2026-11-16 時点の [pokutuna の Scrapbox](https://scrapbox.io/pokutuna/) のエクスポート (JSON、9.7 MB、1,361 ページ)。`data/export.json` に置き、コミットしない

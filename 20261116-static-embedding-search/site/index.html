@@ -42,6 +42,8 @@ input[type="search"]:focus { outline: 2px solid var(--accent); outline-offset: 1
   font: inherit; font-size: 13px; padding: 1px 10px; border: none; border-radius: 6px;
   background: var(--chip); color: var(--ink); cursor: pointer;
 }
+.mode-help { font-size: 13px; color: var(--muted); margin: -4px 0 10px; }
+.examples button.more { background: none; color: var(--accent); }
 .tokens { font-size: 13px; color: var(--muted); min-height: 1.7em; margin: 4px 0 8px; }
 .tokens code { background: var(--chip); border-radius: 4px; padding: 0 5px; margin-right: 3px; }
 .tokens code.unknown { color: var(--unknown); text-decoration: line-through; }
@@ -58,19 +60,18 @@ li a:hover { text-decoration: underline; }
 <main>
   <h1>静的な単語表による検索</h1>
   <p class="lede">
-    <a href="https://scrapbox.io/pokutuna/">pokutuna の Scrapbox</a> (2026-11-16 時点、1,361 ページ) を題材に、ブラウザだけで意味検索する。
-    クエリは単語表を引いて足すだけでベクトルにし、BM25 の順位と合成する。仕組みは
-    <a href="https://github.com/pokutuna/scratch/tree/main/20261116-static-embedding-search">README</a> にある。
+    <a href="https://github.com/GoogleChrome/modern-web-guidance-src">Modern Web Guidance</a> が npm パッケージとして配布している、ユーザーの手元で動く検索を参考に、同じ方式をブラウザだけで動くように実装したもの。文書は事前に Embedding モデルで埋め込み、クエリは学習済みの「単語ごとのベクトルの表」を引いて足すだけでベクトルにする。BM25 の順位とも合成する。題材は <a href="https://scrapbox.io/pokutuna/">pokutuna の Scrapbox</a> (2026-11-16 時点、1,361 ページ)。元の実装の解説は <a href="https://claude.ai/artifact/QprH698TqnQuDFNDyXwWT8">単語表だけで動く意味検索</a>、この実装の説明と結果は <a href="https://github.com/pokutuna/scratch/tree/main/20261116-static-embedding-search">README</a> にある。
   </p>
   <input id="q" type="search" placeholder="検索語を入力" autocomplete="off" disabled>
   <div class="controls">
     <div class="modes" role="radiogroup" aria-label="検索方式">
-      <label><input type="radio" name="mode" value="hybrid" checked><span>合成</span></label>
-      <label><input type="radio" name="mode" value="vector"><span>単語表</span></label>
-      <label><input type="radio" name="mode" value="bm25"><span>BM25</span></label>
+      <label title="ベクトルと BM25 の順位を RRF で合わせる"><input type="radio" name="mode" value="hybrid" checked><span>ハイブリッド</span></label>
+      <label title="単語表から作ったクエリのベクトルと、文書のベクトルの近さ。言い換えに強い"><input type="radio" name="mode" value="vector"><span>ベクトル</span></label>
+      <label title="クエリの語が文書に出てくるかどうか。固有名詞に強い"><input type="radio" name="mode" value="bm25"><span>BM25</span></label>
     </div>
     <span id="status">データを読み込み中 (約 7 MB)…</span>
   </div>
+  <div class="mode-help" id="mode-help"></div>
   <div class="examples" id="examples"></div>
   <div class="tokens" id="tokens"></div>
   <ol id="results"></ol>
@@ -78,13 +79,27 @@ li a:hover { text-decoration: underline; }
 <script type="module">
 import { load } from "./search.mjs";
 
-const EXAMPLES = ["相手を賢く見せる言葉", "動画をプログラムで作る", "Python 遅い 原因 特定", "会議音声 誰が話したか", "ピザ生地"];
+// 例のクエリ。表示のたびにランダムで EXAMPLE_COUNT 件出す。
+// 言い換え (単語表が効く) と、固有名詞や技術用語 (BM25 が効く) を混ぜ、上位に妥当なページが出るものだけを入れている
+const EXAMPLES = [
+  "相手を賢く見せる言葉", "動画をプログラムで作る", "会議音声 誰が話したか", "ピザ生地",
+  "食べ物の期限が切れても大丈夫か", "サラダにかけるもの", "口が寂しいときどうする", "服のサイズの測り方",
+  "立ったまま机で作業", "コーヒー豆", "ロシアの観光地", "ゲームの撃ち合いでの動き方",
+  "英語の文法を学び直す", "チームが自分で動けるようにする", "コードの書き方の判断基準", "コミットメッセージの書き方",
+  "パスワードを比べるときの時間差攻撃", "外部からのリクエストで内部ネットワークに届く脆弱性", "コンテナの脆弱性スキャン",
+  "ログを表で集計したい", "Kubernetes のリソースを消す", "Go でリクエストをキャンセル",
+  "依存パッケージのバージョンを固定すべきか", "UML を文章から描く", "キーボードの押下を可視化",
+  "電子ペーパーで何か作る", "疎ベクトルで検索", "強化学習で言語モデルを調整",
+];
+const EXAMPLE_COUNT = 5;
 const $ = (id) => document.getElementById(id);
 const input = $("q");
 
 function render() {
   const query = input.value.trim();
-  const mode = document.querySelector('input[name="mode"]:checked').value;
+  const checked = document.querySelector('input[name="mode"]:checked');
+  const mode = checked.value;
+  $("mode-help").textContent = checked.closest("label").title;
   $("tokens").replaceChildren();
   $("results").replaceChildren();
   if (!query || !window.searcher) return;
@@ -112,7 +127,7 @@ function render() {
     const snippet = Object.assign(document.createElement("div"), { className: "snippet", textContent: r.snippet });
     const meta = Object.assign(document.createElement("div"), {
       className: "meta",
-      textContent: `${r.year} 年 · 単語表 ${r.vectorRank ?? "-"} 位 · BM25 ${r.bm25Rank ?? "-"} 位`,
+      textContent: `${r.year} 年 · ベクトル ${r.vectorRank ?? "-"} 位 · BM25 ${r.bm25Rank ?? "-"} 位`,
     });
     li.append(a, snippet, meta);
     $("results").append(li);
@@ -120,11 +135,23 @@ function render() {
   if (!results.length) $("results").textContent = "見つかりませんでした。";
 }
 
-for (const q of EXAMPLES) {
-  const b = Object.assign(document.createElement("button"), { type: "button", textContent: q });
-  b.onclick = () => { input.value = q; render(); };
-  $("examples").append(b);
+function showExamples() {
+  // Fisher-Yates でシャッフルして先頭を使う
+  const pool = [...EXAMPLES];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  const buttons = pool.slice(0, EXAMPLE_COUNT).map((q) => {
+    const b = Object.assign(document.createElement("button"), { type: "button", textContent: q });
+    b.onclick = () => { input.value = q; render(); };
+    return b;
+  });
+  const more = Object.assign(document.createElement("button"), { type: "button", className: "more", textContent: "別の例" });
+  more.onclick = showExamples;
+  $("examples").replaceChildren(...buttons, more);
 }
+showExamples();
 input.addEventListener("input", render);
 document.querySelectorAll('input[name="mode"]').forEach((el) => el.addEventListener("change", render));
 
