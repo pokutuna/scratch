@@ -29,10 +29,10 @@ QUERIES = [
 
 
 def main(
-    vecs_path: str = "data/word_vecs0.npy", weights_path: str = "data/word_idf.npy"
+    vecs_path: str = teacher.data_path("word_vecs0.npy"), weights_path: str = "data/word_idf.npy"
 ) -> None:
     chunks = load_chunks()
-    doc_vecs = np.load("data/chunk_vecs.npy")
+    doc_vecs = np.load(teacher.data_path("chunk_vecs.npy"))
     with open("data/vocab.json", encoding="utf-8") as f:
         index = {w: i for i, w in enumerate(json.load(f))}
     vecs, weights = np.load(vecs_path), np.load(weights_path)

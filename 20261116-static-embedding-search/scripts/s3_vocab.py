@@ -49,7 +49,7 @@ def main() -> None:
 
     with open("data/vocab.json", "w", encoding="utf-8") as f:
         json.dump(vocab, f, ensure_ascii=False)
-    np.save("data/word_vecs0.npy", vecs)
+    np.save(teacher.data_path("word_vecs0.npy"), vecs)
     np.save("data/word_idf.npy", idf)
 
     order = np.argsort(idf)

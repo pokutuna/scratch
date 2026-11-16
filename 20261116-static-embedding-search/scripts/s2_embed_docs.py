@@ -37,4 +37,4 @@ def main(src: str, dst: str) -> None:
 
 
 if __name__ == "__main__":
-    main(*(sys.argv[1:] or ["data/chunks.jsonl", "data/chunk_vecs.npy"]))
+    main(*(sys.argv[1:] or ["data/chunks.jsonl", teacher.data_path("chunk_vecs.npy")]))

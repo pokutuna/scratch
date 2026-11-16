@@ -11,12 +11,13 @@ import sys
 import numpy as np
 
 import static
+import teacher
 from evaluate import load_eval_set, page_ranks, summary
 
 
 def main(tables: list[str]) -> None:
     ev = load_eval_set()
-    doc_vecs = np.load("data/chunk_vecs.npy")
+    doc_vecs = np.load(teacher.data_path("chunk_vecs.npy"))
 
     def report(name: str, query_vecs: np.ndarray) -> None:
         cos = (query_vecs * ev.teacher).sum(1).mean()
@@ -28,8 +29,8 @@ def main(tables: list[str]) -> None:
     report("teacher", ev.teacher)
     for spec in tables:
         name, vecs_name, weights_name = spec.split(":")
-        vecs = np.load(f"data/{vecs_name}.npy")
-        weights = np.load(f"data/{weights_name}.npy")
+        vecs = np.load(teacher.data_path(f"{vecs_name}.npy"))
+        weights = np.load(f"data/{weights_name}.npy" if weights_name == "word_idf" else teacher.data_path(f"{weights_name}.npy"))
         report(
             name,
             np.stack(

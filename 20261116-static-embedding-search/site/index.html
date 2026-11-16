@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>静的な単語表による検索</title>
+<title>静的な単語表による意味検索</title>
 <style>
 :root {
   --bg: #fafaf8; --surface: #fff; --ink: #1f2937; --muted: #6b7280; --rule: #e3e5e8;
@@ -23,6 +23,7 @@ body {
 main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
 h1 { font-size: 22px; margin: 0 0 4px; }
 .lede { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+.lede p { margin: 0 0 6px; }
 .lede a { color: var(--accent); }
 input[type="search"] {
   width: 100%; font: inherit; font-size: 17px; padding: 10px 14px;
@@ -58,10 +59,12 @@ li a:hover { text-decoration: underline; }
 </head>
 <body>
 <main>
-  <h1>静的な単語表による検索</h1>
-  <p class="lede">
-    <a href="https://github.com/GoogleChrome/modern-web-guidance-src">Modern Web Guidance</a> が npm パッケージとして配布している、ユーザーの手元で動く検索を参考に、同じ方式をブラウザだけで動くように実装したもの。文書は事前に Embedding モデルで埋め込み、クエリは学習済みの「単語ごとのベクトルの表」を引いて足すだけでベクトルにする。BM25 の順位とも合成する。題材は <a href="https://scrapbox.io/pokutuna/">pokutuna の Scrapbox</a> (2026-11-16 時点、1,361 ページ)。元の実装の解説は <a href="https://claude.ai/artifact/QprH698TqnQuDFNDyXwWT8">単語表だけで動く意味検索</a>、この実装の説明と結果は <a href="https://github.com/pokutuna/scratch/tree/main/20261116-static-embedding-search">README</a> にある。
-  </p>
+  <h1>静的な単語表による意味検索</h1>
+  <div class="lede">
+    <p><a href="https://github.com/GoogleChrome/modern-web-guidance-src">Modern Web Guidance</a> が npm パッケージとして配布している、ユーザーの手元で動く検索を参考に、同じ方式をブラウザだけで動くように実装したもの。</p>
+    <p>普通の意味検索は、文書もクエリも Embedding モデルに通してベクトルにする。ここでモデル (gemini-embedding-2) を使うのはビルド時だけで、文書を埋め込んでおく。検索時はクエリを語に分け、語ごとのベクトルを表から取り出して重み付きで足すだけで、クエリのベクトルを作る。この単語表は、足した結果が gemini-embedding-2 でクエリを埋め込んだ結果に近づくよう、事前に学習してある。モデルも API も呼ばないので、検索はブラウザの中で数 ms で終わり、クエリは外部に送られない。単語表で拾えない固有名詞などは BM25 で補い、2 つの順位を合成する。</p>
+    <p>題材は <a href="https://scrapbox.io/pokutuna/">pokutuna の Scrapbox</a> (2026-11-16 時点、1,361 ページ)。元の実装の解説は <a href="https://claude.ai/artifact/QprH698TqnQuDFNDyXwWT8">単語表だけで動く意味検索</a>、この実装の説明と結果は <a href="https://github.com/pokutuna/scratch/tree/main/20261116-static-embedding-search">README</a> にある。</p>
+  </div>
   <input id="q" type="search" placeholder="検索語を入力" autocomplete="off" disabled>
   <div class="controls">
     <div class="modes" role="radiogroup" aria-label="検索方式">
@@ -84,11 +87,11 @@ import { load } from "./search.mjs";
 const EXAMPLES = [
   "相手を賢く見せる言葉", "動画をプログラムで作る", "会議音声 誰が話したか", "ピザ生地",
   "食べ物の期限が切れても大丈夫か", "サラダにかけるもの", "口が寂しいときどうする", "服のサイズの測り方",
-  "立ったまま机で作業", "コーヒー豆", "ロシアの観光地", "ゲームの撃ち合いでの動き方",
+  "コーヒー豆", "ロシアの観光地", "ゲームの撃ち合いでの動き方",
   "英語の文法を学び直す", "チームが自分で動けるようにする", "コードの書き方の判断基準", "コミットメッセージの書き方",
   "パスワードを比べるときの時間差攻撃", "外部からのリクエストで内部ネットワークに届く脆弱性", "コンテナの脆弱性スキャン",
   "ログを表で集計したい", "Kubernetes のリソースを消す", "Go でリクエストをキャンセル",
-  "依存パッケージのバージョンを固定すべきか", "UML を文章から描く", "キーボードの押下を可視化",
+  "依存パッケージのバージョンを固定すべきか", "キーボードの押下を可視化",
   "電子ペーパーで何か作る", "疎ベクトルで検索", "強化学習で言語モデルを調整",
 ];
 const EXAMPLE_COUNT = 5;

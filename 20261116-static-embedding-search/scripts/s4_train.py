@@ -59,7 +59,7 @@ def load_queries() -> tuple[dict[str, list[str]], list[str]]:
 
 def teacher_vectors(queries: list[str]) -> np.ndarray:
     """教師モデルのクエリベクトル。クエリの文字列をキーにキャッシュする。"""
-    path = "data/query_teacher.npz"
+    path = teacher.data_path("query_teacher.npz")
     cache: dict[str, np.ndarray] = {}
     if os.path.exists(path):
         z = np.load(path)
@@ -101,7 +101,7 @@ def main() -> None:
     with open("data/vocab.json", encoding="utf-8") as f:
         vocab = json.load(f)
     index = {w: i for i, w in enumerate(vocab)}
-    E0 = torch.from_numpy(np.load("data/word_vecs0.npy"))
+    E0 = torch.from_numpy(np.load(teacher.data_path("word_vecs0.npy")))
     w0 = torch.from_numpy(np.load("data/word_idf.npy"))
 
     train_by_source, val = load_queries()
@@ -166,10 +166,11 @@ def main() -> None:
             break
 
     score, E_best, w_best, epoch = best
-    np.save(f"data/word_vecs_{args.name}.npy", E_best.numpy())
-    np.save(f"data/word_weights_{args.name}.npy", w_best.numpy())
+    out_vecs = teacher.data_path(f"word_vecs_{args.name}.npy")
+    np.save(out_vecs, E_best.numpy())
+    np.save(teacher.data_path(f"word_weights_{args.name}.npy"), w_best.numpy())
     print(
-        f"best: epoch {epoch}  val cos {score:.4f}  -> data/word_vecs_{args.name}.npy"
+        f"best: epoch {epoch}  val cos {score:.4f}  -> {out_vecs}"
     )
 
 

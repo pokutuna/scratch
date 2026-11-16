@@ -1,6 +1,7 @@
 """段階 7: ブラウザで検索するためのデータを site/data/ に書き出す。
 
-ベクトル検索の 4 ファイルは段階 5 の data/index_* をそのまま写す。ほかに次のものを書く。
+ベクトル検索の 4 ファイルは段階 5 の index_* をそのまま写す。環境変数 TEACHER で選んだ教師モデルのものを使う
+(公開しているページは gemini)。ほかに次のものを書く。
 
 - vocab.json: 単語表の語 (行の順)
 - pages.json: ページのタイトル、URL、年
@@ -10,7 +11,7 @@
 あわせて、ブラウザ側の計算を確かめるため、検証用クエリと正解のページ番号を data/val_queries.json に書く
 (公開しないので data/ に置く)。
 
-    uv run python scripts/s7_export_site.py
+    TEACHER=gemini uv run python scripts/s7_export_site.py
 """
 
 import json
@@ -19,6 +20,7 @@ import shutil
 from collections import Counter
 from pathlib import Path
 
+import teacher
 from evaluate import load_eval_set
 from s2_teacher_search import load_chunks
 
@@ -37,10 +39,10 @@ def write_json(name: str, obj: object) -> None:
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for name in ["words.i8", "word_scale.f32", "docs.i8", "doc_scale.f32"]:
-        shutil.copy(f"data/index_{name}", OUT / name)
-    with open("data/index_meta.json") as f:
+        shutil.copy(teacher.data_path(f"index_{name}"), OUT / name)
+    with open(teacher.data_path("index_meta.json")) as f:
         meta = json.load(f)
-    write_json("meta.json", {"dims": meta["dims"]})
+    write_json("meta.json", {"dims": meta["dims"], "teacher": teacher.NAME})
     shutil.copy("data/vocab.json", OUT / "vocab.json")
 
     chunks = load_chunks()

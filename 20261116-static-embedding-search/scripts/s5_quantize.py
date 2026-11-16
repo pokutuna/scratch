@@ -23,6 +23,7 @@ import json
 
 import numpy as np
 
+import teacher
 from evaluate import EvalSet, load_eval_set, page_ranks, summary
 
 TABLE = "synth_llm"  # 段階 4 で選んだ単語表
@@ -98,6 +99,18 @@ def compare(ev: EvalSet, doc_vecs: np.ndarray, table: np.ndarray) -> None:
             dims,
             True,
         )
+    # 先頭の次元を切り詰める。MRL で学習したモデル (gemini-embedding-2) ならこれでも使えるはず。
+    # 単語表は列を切るだけでよい (クエリベクトルを切ったのと同じになる)。文書は切ってから正規化し直す
+    for dims in [512, 384, 256, 192, 128, 64]:
+        words, docs = table[:, :dims], normalize(doc_vecs[:, :dims])
+        report(f"head {dims} float32", words, docs, dims, False)
+        report(
+            f"head {dims} int8",
+            dequantize(*quantize(words)),
+            dequantize(*quantize(docs)),
+            dims,
+            True,
+        )
 
 
 def save(doc_vecs: np.ndarray, table: np.ndarray, dims: int) -> None:
@@ -110,11 +123,11 @@ def save(doc_vecs: np.ndarray, table: np.ndarray, dims: int) -> None:
     proj = fit_pca(doc_vecs, dims)
     words, word_scale = quantize(table @ proj)
     docs, doc_scale = quantize(normalize(doc_vecs @ proj))
-    words.tofile("data/index_words.i8")
-    word_scale.tofile("data/index_word_scale.f32")
-    docs.tofile("data/index_docs.i8")
-    doc_scale.tofile("data/index_doc_scale.f32")
-    with open("data/index_meta.json", "w") as f:
+    words.tofile(teacher.data_path("index_words.i8"))
+    word_scale.tofile(teacher.data_path("index_word_scale.f32"))
+    docs.tofile(teacher.data_path("index_docs.i8"))
+    doc_scale.tofile(teacher.data_path("index_doc_scale.f32"))
+    with open(teacher.data_path("index_meta.json"), "w") as f:
         json.dump(
             {"dims": dims, "words": len(words), "docs": len(docs), "table": TABLE}, f
         )
@@ -127,10 +140,10 @@ def main() -> None:
     ap.add_argument("--save", action="store_true")
     args = ap.parse_args()
 
-    doc_vecs = np.load("data/chunk_vecs.npy")
+    doc_vecs = np.load(teacher.data_path("chunk_vecs.npy"))
     table = fold_weights(
-        np.load(f"data/word_vecs_{TABLE}.npy"),
-        np.load(f"data/word_weights_{TABLE}.npy"),
+        np.load(teacher.data_path(f"word_vecs_{TABLE}.npy")),
+        np.load(teacher.data_path(f"word_weights_{TABLE}.npy")),
     )
     if args.save:
         save(doc_vecs, table, args.dims)

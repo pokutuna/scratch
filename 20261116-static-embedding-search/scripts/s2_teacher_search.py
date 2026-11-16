@@ -35,7 +35,7 @@ def rank_pages(
 
 def main(queries: list[str]) -> None:
     chunks = load_chunks()
-    doc_vecs = np.load("data/chunk_vecs.npy")
+    doc_vecs = np.load(teacher.data_path("chunk_vecs.npy"))
     query_vecs = teacher.encode_queries(queries)
     for query, q in zip(queries, query_vecs):
         print(f"\n# {query}")

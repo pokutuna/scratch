@@ -20,6 +20,7 @@ from collections import Counter
 
 import numpy as np
 
+import teacher
 from evaluate import EvalSet, load_eval_set, summary, target_ranks, to_page_scores
 
 K1 = 1.2
@@ -61,12 +62,12 @@ class BM25:
 
 def load_index() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """段階 5 のファイルを読む。(単語表 int8, 単語の倍率, 文書 int8, 文書の倍率)"""
-    with open("data/index_meta.json") as f:
+    with open(teacher.data_path("index_meta.json")) as f:
         dims = json.load(f)["dims"]
-    words = np.fromfile("data/index_words.i8", np.int8).reshape(-1, dims)
-    docs = np.fromfile("data/index_docs.i8", np.int8).reshape(-1, dims)
-    word_scale = np.fromfile("data/index_word_scale.f32", np.float32)
-    doc_scale = np.fromfile("data/index_doc_scale.f32", np.float32)
+    words = np.fromfile(teacher.data_path("index_words.i8"), np.int8).reshape(-1, dims)
+    docs = np.fromfile(teacher.data_path("index_docs.i8"), np.int8).reshape(-1, dims)
+    word_scale = np.fromfile(teacher.data_path("index_word_scale.f32"), np.float32)
+    doc_scale = np.fromfile(teacher.data_path("index_doc_scale.f32"), np.float32)
     return words, word_scale, docs, doc_scale
 
 
@@ -127,7 +128,7 @@ def main() -> None:
 
     pages_bm25 = to_page_scores(np.stack([bm25.scores(t) for t in ev.tokens]), ev)
     pages_vec = to_page_scores(vector_scores(ev), ev)
-    pages_teacher = to_page_scores(ev.teacher @ np.load("data/chunk_vecs.npy").T, ev)
+    pages_teacher = to_page_scores(ev.teacher @ np.load(teacher.data_path("chunk_vecs.npy")).T, ev)
 
     overlap = lexical_overlap(ev, chunk_tokens)
     low = overlap < 0.5
