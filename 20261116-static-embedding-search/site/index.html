@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scrapbox 静的埋め込み検索</title>
+<title>静的な単語表による検索</title>
 <style>
 :root {
   --bg: #fafaf8; --surface: #fff; --ink: #1f2937; --muted: #6b7280; --rule: #e3e5e8;
@@ -56,11 +56,11 @@ li a:hover { text-decoration: underline; }
 </head>
 <body>
 <main>
-  <h1>Scrapbox 静的埋め込み検索</h1>
+  <h1>静的な単語表による検索</h1>
   <p class="lede">
-    <a href="https://scrapbox.io/pokutuna/">pokutuna の Scrapbox</a> (2026-11-16 時点、1,361 ページ) を、ブラウザだけで意味検索する。
+    <a href="https://scrapbox.io/pokutuna/">pokutuna の Scrapbox</a> (2026-11-16 時点、1,361 ページ) を題材に、ブラウザだけで意味検索する。
     クエリは単語表を引いて足すだけでベクトルにし、BM25 の順位と合成する。仕組みは
-    <a href="https://github.com/pokutuna/scratch/tree/main/20261116-scrapbox-static-search">README</a> にある。
+    <a href="https://github.com/pokutuna/scratch/tree/main/20261116-static-embedding-search">README</a> にある。
   </p>
   <input id="q" type="search" placeholder="検索語を入力" autocomplete="off" disabled>
   <div class="controls">

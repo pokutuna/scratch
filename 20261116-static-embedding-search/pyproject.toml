@@ -1,5 +1,5 @@
 [project]
-name = "scrapbox-static-search"
+name = "static-embedding-search"
 version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [

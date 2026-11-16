@@ -1,9 +1,9 @@
-# Scrapbox のページを静的な単語表で意味検索する
+# 静的な単語表による意味検索
 
-Modern Web Guidance の検索と同じ方式を、自分の Scrapbox のページで試す。文書はビルド時に Embedding モデルで埋め込み、クエリは「単語ごとのベクトルの表」を引いて足すだけでベクトルにする。実行時にモデルが要らないので、検索をブラウザ (`site/`) だけで動かせる。
+[Modern Web Guidance の検索](https://github.com/GoogleChrome/modern-web-guidance-src/tree/main/src/rag)と同じ方式 (Model2Vec / Tokenlearn による静的な単語表と BM25 の合成) を、自分で一から組んで試す。元の実装の解説は [単語表だけで動く意味検索: Modern Web Guidance の静的埋め込み検索](https://claude.ai/artifact/QprH698TqnQuDFNDyXwWT8) にまとめた。文書はビルド時に Embedding モデルで埋め込み、クエリは「単語ごとのベクトルの表」を引いて足すだけでベクトルにする。実行時にモデルが要らないので、検索をブラウザ (`site/`) だけで動かせる。
 
 - 教師モデル: [cl-nagoya/ruri-v3-310m](https://huggingface.co/cl-nagoya/ruri-v3-310m) (ローカルで実行、768 次元、クエリには `検索クエリ: `、文書には `検索文書: ` を付ける)
-- データ: 2026-11-16 時点の [pokutuna の Scrapbox](https://scrapbox.io/pokutuna/) のエクスポート (JSON、9.7 MB、1,361 ページ)。`data/export.json` に置き、コミットしない
+- データ (試すための題材): 2026-11-16 時点の [pokutuna の Scrapbox](https://scrapbox.io/pokutuna/) のエクスポート (JSON、9.7 MB、1,361 ページ)。`data/export.json` に置き、コミットしない
 
 ## 段階
 
