@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Issue Artifact Probe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #ffffff;
+    --fg: #1f2328;
+    --muted: #59636e;
+    --line: #d1d9e0;
+    --card: #f6f8fa;
+    --ok: #1a7f37;
+    --ng: #cf222e;
+    --accent: #0969da;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --fg: #e6edf3;
+      --muted: #9198a1;
+      --line: #3d444d;
+      --card: #151b23;
+      --ok: #3fb950;
+      --ng: #f85149;
+      --accent: #4493f8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 16px;
+    background: var(--bg);
+    color: var(--fg);
+    font: 14px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 24px 0 8px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+  h3 { font-size: 14px; margin: 0 0 4px; }
+  .lead { color: var(--muted); margin: 0 0 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+  .t { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; }
+  .how { color: var(--muted); font-size: 12px; margin: 0 0 8px; }
+  .res { min-height: 24px; }
+  .art { margin: 8px 0 0; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 12px; }
+  .art .ok, .art .ng { font-weight: 400; }
+  .art .note { color: var(--muted); }
+  .art-label { display: inline-block; padding: 0 6px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font-size: 11px; }
+  .links { margin: 0 0 8px; padding-left: 20px; }
+  a { color: var(--accent); }
+  .ok { color: var(--ok); font-weight: 600; }
+  .ng { color: var(--ng); font-weight: 600; }
+  code { font-size: 12px; }
+  button, .btn {
+    font: inherit; padding: 2px 10px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); color: var(--fg); cursor: pointer;
+  }
+
+  /* A1: <style> 要素が効くか */
+  .probe-style .ng { display: none; }
+  .probe-style .ok { display: inline !important; }
+
+  /* A5: prefers-color-scheme */
+  .scheme-dark { display: none; }
+  @media (prefers-color-scheme: dark) {
+    .scheme-light { display: none; }
+    .scheme-dark { display: inline; }
+  }
+
+  /* A6: ビューポート幅をメディアクエリで区切って表示する */
+  .w { display: none; font-weight: 600; }
+  @media (max-width: 399px) { .w-0 { display: inline; } }
+  @media (min-width: 400px) and (max-width: 599px) { .w-400 { display: inline; } }
+  @media (min-width: 600px) and (max-width: 799px) { .w-600 { display: inline; } }
+  @media (min-width: 800px) and (max-width: 999px) { .w-800 { display: inline; } }
+  @media (min-width: 1000px) and (max-width: 1399px) { .w-1000 { display: inline; } }
+  @media (min-width: 1400px) { .w-1400 { display: inline; } }
+
+  /* A7: Web フォント */
+  .webfont { font-family: "DotGothic16", serif; font-size: 20px; }
+
+  /* B4: CSS 背景の SVG data URI */
+  .svg-bg {
+    width: 64px; height: 32px; border-radius: 4px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Ccircle cx='8' cy='8' r='5' fill='%23e3b341'/%3E%3C/svg%3E");
+  }
+
+  /* D1: checkbox + :checked */
+  .lamp { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--line); vertical-align: middle; transition: background .2s; }
+  #d1:checked ~ .lamp { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  #d1:checked ~ .lamp-label::after { content: " ON"; color: var(--ok); font-weight: 600; }
+
+  /* D4: radio + :has() のタブ */
+  .tabs .panel { display: none; padding: 6px 0 0; }
+  .tabs:has(#tab-a:checked) .panel-a,
+  .tabs:has(#tab-b:checked) .panel-b,
+  .tabs:has(#tab-c:checked) .panel-c { display: block; }
+
+  /* D5: :target */
+  .target-box { display: none; }
+  .target-box:target { display: block; }
+
+  /* D8: :hover と transition */
+  .hover-box { display: inline-block; padding: 4px 10px; border-radius: 6px; background: var(--line); transition: transform .3s, background .3s; }
+  .hover-box:hover { transform: rotate(-4deg) scale(1.1); background: var(--accent); color: #fff; }
+
+  /* D9: scroll-snap */
+  .snap { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; }
+  .snap > div { flex: 0 0 80%; scroll-snap-align: start; padding: 12px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); }
+
+  /* E1: @keyframes */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 50% { opacity: .3; transform: scale(.8); } }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; vertical-align: middle; }
+  .pulse { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--ok); animation: pulse 1.2s ease-in-out infinite; vertical-align: middle; margin-left: 8px; }
+
+  /* 表 */
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th, td { border: 1px solid var(--line); padding: 2px 6px; text-align: left; }
+  th { background: var(--bg); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  dialog { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); }
+  [popover] { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); padding: 12px; }
+  iframe { width: 100%; height: 80px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+</style>
+</head>
+<body>
+<h1>Issue Artifact Probe</h1>
+<p class="lead">HTML、CSS、JavaScript のどの機能が GitHub Issue Artifact のパネルで動くかを 1 枚で確かめるページ。各カードの結果欄が緑の ✓ なら動作、赤の ✗ なら不動作。操作が必要なカードは「操作」に従う。カード下部の「Issue Artifact」は、このページを Issue に添付してパネルで開いたときの結果 (2026-11-17 に確認)。</p>
+<ul class="links">
+  <li>検証用 Issue: <a href="https://github.com/pokutuna/scratch/issues/12">pokutuna/scratch#12</a> (artifact は GitHub にサインインしていないと見えない)</li>
+  <li>このページの artifact: <a href="https://github.com/pokutuna/scratch/issues/12/artifacts/1">Probe HTML</a> / Markdown の artifact: <a href="https://github.com/pokutuna/scratch/issues/12/artifacts/2">Probe Markdown</a></li>
+  <li>仕組みと制約のまとめ: <a href="https://github.com/pokutuna/scratch/tree/main/20261117-gh-issue-artifact">README</a></li>
+  <li>公式ドキュメント: <a href="https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/using-artifacts-with-issues">Using artifacts with issues</a> / <a href="https://github.blog/changelog/2026-10-28-issue-artifacts-are-now-in-public-preview/">Changelog</a></li>
+  <li>参考記事:<a href="https://zenn.dev/kesin11/articles/20261114_github_issue_artifact">GitHub IssueにArtifactとしてHTMLとMarkdownを添付できるようになった</a></li>
+</ul>
+<p class="how">Issue Artifact のパネル内ではリンクを開けない (F1、F2)。リンクを開くときは公開ページから開く。</p>
+
+<h2>A. 表示</h2>
+<div class="grid">
+  <section class="t probe-style">
+    <h3>A1 &lt;style&gt; 要素</h3>
+    <p class="how">head の &lt;style&gt; で ✗ を隠し ✓ を出す</p>
+    <div class="res"><span class="ng">✗ &lt;style&gt; が効いていない</span><span class="ok" style="display:none">✓ &lt;style&gt; が効いている</span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>A2 style 属性</h3>
+    <p class="how">文字が紫で太字になる</p>
+    <div class="res"><span style="color:#8250df;font-weight:700">style 属性の文字</span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>A3 インライン SVG</h3>
+    <p class="how">棒グラフが 4 本見える</p>
+    <div class="res">
+      <svg viewBox="0 0 200 70" width="200" height="70" role="img" aria-label="棒グラフ">
+        <g fill="currentColor" opacity=".25"><rect x="0" y="69" width="200" height="1"/></g>
+        <rect x="10" y="40" width="30" height="29" fill="#0969da"/>
+        <rect x="58" y="20" width="30" height="49" fill="#1a7f37"/>
+        <rect x="106" y="8" width="30" height="61" fill="#bf8700"/>
+        <rect x="154" y="30" width="30" height="39" fill="#cf222e"/>
+      </svg>
+    </div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>A4 table</h3>
+    <p class="how">罫線付きの表になる</p>
+    <div class="res">
+      <table>
+        <thead><tr><th>項目</th><th>値</th></tr></thead>
+        <tbody><tr><td>alpha</td><td class="num">1,024</td></tr><tr><td>beta</td><td class="num">42</td></tr></tbody>
+      </table>
+    </div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>A5 prefers-color-scheme</h3>
+    <p class="how">GitHub のテーマを切り替えて追従するか見る</p>
+    <div class="res">今は <span class="scheme-light ok">light</span><span class="scheme-dark ok">dark</span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓ ブラウザの設定に従う</span></p>
+  </section>
+  <section class="t">
+    <h3>A6 ビューポート幅</h3>
+    <p class="how">メディアクエリで判定したフレームの幅。パネルを最大化して変わるか見る</p>
+    <div class="res">
+      <span class="w w-0">〜399px</span><span class="w w-400">400〜599px</span><span class="w w-600">600〜799px</span><span class="w w-800">800〜999px</span><span class="w w-1000">1000〜1399px</span><span class="w w-1400">1400px〜</span>
+    </div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓ 右に開いた状態で 510px、最大化で 1824px</span></p>
+  </section>
+  <section class="t">
+    <h3>A7 Web フォント (Google Fonts)</h3>
+    <p class="how">ドット絵風の書体なら外部 CSS とフォントを読めている</p>
+    <div class="res"><span class="webfont">ドット文字 ABC 123</span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗ CSP の style-src で外部 CSS を拒否</span></p>
+  </section>
+</div>
+
+<h2>B. 画像</h2>
+<div class="grid">
+  <section class="t">
+    <h3>B1 PNG (data URI)</h3>
+    <p class="how">グラデーションの市松模様が見える</p>
+    <div class="res"><img src="data:image/png;base64,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" width="64" height="64" alt="data URI の PNG"></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>B2 PNG (相対パス)</h3>
+    <p class="how"><code>images/sample.png</code> を参照する</p>
+    <div class="res"><img src="images/sample.png" width="64" height="64" alt="相対パスの PNG (表示されない)"></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗ viewscreen.githubusercontent.com 上のパスとして解決され、CSP で拒否</span></p>
+  </section>
+  <section class="t">
+    <h3>B3 外部 URL の画像</h3>
+    <p class="how">github.githubassets.com の favicon</p>
+    <div class="res"><img src="https://github.githubassets.com/favicons/favicon.png" width="32" height="32" alt="外部画像 (表示されない)"></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗ CSP の img-src で拒否 (data: と blob: のみ)</span></p>
+  </section>
+  <section class="t">
+    <h3>B4 CSS 背景の SVG (data URI)</h3>
+    <p class="how">黄色の水玉模様が見える</p>
+    <div class="res"><div class="svg-bg"></div></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+</div>
+
+<h2>C. JavaScript</h2>
+<div class="grid">
+  <section class="t">
+    <h3>C1 インライン &lt;script&gt;</h3>
+    <p class="how">読み込み時に書き換える</p>
+    <div class="res" id="c1"><span class="ng">✗ 実行されていない</span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗ innerHTML で差し込まれるため実行されない</span></p>
+  </section>
+  <section class="t">
+    <h3>C2 onclick 属性</h3>
+    <p class="how">操作: ボタンを押す</p>
+    <div class="res"><button type="button" onclick="this.nextElementSibling.innerHTML='<span class=ok>✓ 実行された</span>'">押す</button> <span>未実行</span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓ インラインのイベントハンドラーは動く</span></p>
+  </section>
+  <section class="t">
+    <h3>C3 javascript: URL</h3>
+    <p class="how">操作: リンクを押す</p>
+    <div class="res"><a href="javascript:void(document.getElementById('c3').innerHTML='<span class=ok>✓ 実行された</span>')">押す</a> <span id="c3">未実行</span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗</span></p>
+  </section>
+  <section class="t">
+    <h3>C4 &lt;noscript&gt;</h3>
+    <p class="how">スクリプトが無効なら中身が出る</p>
+    <div class="res"><noscript><span class="ng">noscript の中身が出ている (スクリプト無効)</span></noscript><span id="c4"></span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="note">中身は出ない (スクリプト有効として扱われる)</span></p>
+  </section>
+  <section class="t">
+    <h3>C5 canvas + requestAnimationFrame</h3>
+    <p class="how">ボールが動く</p>
+    <div class="res"><canvas id="c5" width="200" height="40" style="border:1px solid var(--line);border-radius:4px"></canvas></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗ C1 と同じ理由</span></p>
+  </section>
+  <section class="t">
+    <h3>C6 外部 &lt;script src&gt; (cdnjs)</h3>
+    <p class="how">lodash を読み込み、C1 と同じ方法で結果を書く</p>
+    <div class="res" id="c6"><span class="ng">✗ 読み込まれていない</span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗ 外部スクリプトは読み込めない</span></p>
+  </section>
+  <section class="t">
+    <h3>C7 &lt;img onload&gt; で自動実行</h3>
+    <p class="how">data URI の 1px 画像の onload で書き換える</p>
+    <div class="res"><span id="c7"><span class="ng">✗ 実行されていない</span></span><img alt="" width="1" height="1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" onload="document.getElementById('c7').innerHTML='<span class=ok>✓ onload で実行された</span>'"></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓ 表示と同時に実行される</span></p>
+  </section>
+  <section class="t">
+    <h3>C8 onload から canvas アニメーション</h3>
+    <p class="how">C7 と同じ方法で requestAnimationFrame のループを始める</p>
+    <div class="res"><canvas id="c8" width="200" height="40" style="border:1px solid var(--line);border-radius:4px"></canvas><img alt="" width="1" height="1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" onload="const c=document.getElementById('c8'),x=c.getContext('2d');let t=0;(function f(){t+=0.03;x.clearRect(0,0,200,40);x.fillStyle='#8250df';x.beginPath();x.arc(100+Math.sin(t)*85,20,10,0,Math.PI*2);x.fill();requestAnimationFrame(f)})()"></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+</div>
+
+<h2>D. HTML と CSS だけの操作</h2>
+<div class="grid">
+  <section class="t">
+    <h3>D1 checkbox + :checked</h3>
+    <p class="how">操作: チェックを入れるとランプが点く</p>
+    <div class="res"><input type="checkbox" id="d1"> <label for="d1" class="lamp-label">スイッチ</label> <span class="lamp"></span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>D2 details / summary</h3>
+    <p class="how">操作: 開閉する</p>
+    <div class="res"><details><summary>開く</summary><span class="ok">✓ 開いた</span></details></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>D3 details name (排他アコーディオン)</h3>
+    <p class="how">操作: 片方を開くともう片方が閉じる</p>
+    <div class="res">
+      <details name="d3"><summary>その 1</summary>1 の中身</details>
+      <details name="d3"><summary>その 2</summary>2 の中身</details>
+    </div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>D4 radio + :has() のタブ</h3>
+    <p class="how">操作: タブを切り替える</p>
+    <div class="res tabs">
+      <label><input type="radio" name="d4" id="tab-a" checked> A</label>
+      <label><input type="radio" name="d4" id="tab-b"> B</label>
+      <label><input type="radio" name="d4" id="tab-c"> C</label>
+      <div class="panel panel-a">パネル A</div>
+      <div class="panel panel-b">パネル B</div>
+      <div class="panel panel-c"><span class="ok">✓ パネル C</span></div>
+    </div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>D5 アンカー + :target</h3>
+    <p class="how">操作: リンクを押すと下に箱が出る</p>
+    <div class="res"><a href="#d5-box">#d5-box へ</a><div class="target-box ok" id="d5-box">✓ :target が当たった</div></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>D6 popover 属性</h3>
+    <p class="how">操作: ボタンでポップオーバーを開く</p>
+    <div class="res"><button type="button" popovertarget="d6">開く</button><div id="d6" popover><span class="ok">✓ popover が開いた</span></div></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>D7 dialog + command 属性</h3>
+    <p class="how">操作: ボタンでモーダルを開く (Invoker Commands)</p>
+    <div class="res">
+      <button type="button" commandfor="d7" command="show-modal">開く</button>
+      <dialog id="d7"><p class="ok">✓ dialog が開いた</p><button type="button" commandfor="d7" command="close">閉じる</button></dialog>
+    </div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>D8 :hover + transition</h3>
+    <p class="how">操作: マウスを乗せると傾く</p>
+    <div class="res"><span class="hover-box">hover me</span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>D9 scroll-snap</h3>
+    <p class="how">操作: 横にスクロールするとカードに吸着する</p>
+    <div class="res snap"><div>カード 1</div><div>カード 2</div><div>カード 3</div></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+</div>
+
+<h2>E. アニメーション</h2>
+<div class="grid">
+  <section class="t">
+    <h3>E1 CSS @keyframes</h3>
+    <p class="how">回転と点滅</p>
+    <div class="res"><span class="spinner"></span><span class="pulse"></span></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+  <section class="t">
+    <h3>E2 SVG &lt;animate&gt; (自動)</h3>
+    <p class="how">円が左右に動く</p>
+    <div class="res">
+      <svg viewBox="0 0 200 30" width="200" height="30">
+        <circle cx="15" cy="15" r="10" fill="#8250df"><animate attributeName="cx" values="15;185;15" dur="2s" repeatCount="indefinite"/></circle>
+      </svg>
+    </div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓ クリックしなくても動く</span></p>
+  </section>
+  <section class="t">
+    <h3>E3 SVG &lt;animate begin="click"&gt;</h3>
+    <p class="how">操作: 四角を押すと色が変わる</p>
+    <div class="res">
+      <svg viewBox="0 0 60 30" width="60" height="30" style="cursor:pointer">
+        <rect x="0" y="0" width="60" height="30" rx="4" fill="#59636e"><set attributeName="fill" to="#1a7f37" begin="click"/></rect>
+      </svg>
+    </div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ok">✓</span></p>
+  </section>
+</div>
+
+<h2>F. リンクと埋め込み</h2>
+<div class="grid">
+  <section class="t">
+    <h3>F1 外部リンク (target=_blank)</h3>
+    <p class="how">操作: 新しいタブで開くか</p>
+    <div class="res"><a href="https://example.com/" target="_blank" rel="noopener">example.com</a></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗ sandbox に allow-popups がなく開かない</span></p>
+  </section>
+  <section class="t">
+    <h3>F2 外部リンク (target なし)</h3>
+    <p class="how">操作: パネル内で遷移するか</p>
+    <div class="res"><a href="https://example.com/">example.com</a></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗ iframe 内で遷移し、CSP の frame-src で拒否されてエラー画面になる</span></p>
+  </section>
+  <section class="t">
+    <h3>F3 iframe</h3>
+    <p class="how">example.com を埋め込む</p>
+    <div class="res"><iframe src="https://example.com/" title="example.com"></iframe></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗ CSP の frame-src で拒否</span></p>
+  </section>
+  <section class="t">
+    <h3>F4 form (GET, target=_blank)</h3>
+    <p class="how">操作: 送信して新しいタブで開くか</p>
+    <div class="res"><form action="https://example.com/" method="get" target="_blank"><input name="q" value="probe" size="8"> <button>送信</button></form></div>
+    <p class="art"><span class="art-label">Issue Artifact</span> <span class="ng">✗ sandbox に allow-forms がなく送信されない</span></p>
+  </section>
+</div>
+
+<script>
+  document.getElementById("c1").innerHTML = '<span class="ok">✓ 実行された</span>';
+  document.getElementById("c4").textContent = "スクリプトが動いたので noscript は出ない";
+
+  const canvas = document.getElementById("c5");
+  const ctx = canvas.getContext("2d");
+  let t = 0;
+  (function frame() {
+    t += 0.03;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#bf8700";
+    ctx.beginPath();
+    ctx.arc(100 + Math.sin(t) * 85, 20, 10, 0, Math.PI * 2);
+    ctx.fill();
+    requestAnimationFrame(frame);
+  })();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+<script>
+  if (window._) document.getElementById("c6").innerHTML = '<span class="ok">✓ 読み込まれた (lodash ' + _.VERSION + ")</span>";
+</script>
+</body>
+</html>
