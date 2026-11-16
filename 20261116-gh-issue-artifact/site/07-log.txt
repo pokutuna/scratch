@@ -1,0 +1,8 @@
+2026-11-16T09:00:00Z INFO  starting worker id=1
+2026-11-16T09:00:01Z INFO  connected to queue
+2026-11-16T09:00:02Z WARN  slow response elapsed_ms=1532
+2026-11-16T09:00:03Z ERROR job failed id=42 reason="timeout"
+2026-11-16T09:00:03Z INFO  retrying id=42 attempt=2
+2026-11-16T09:00:05Z INFO  job done id=42
+<b>HTML タグがそのまま表示されるか</b>
+**Markdown 記法がそのまま表示されるか**

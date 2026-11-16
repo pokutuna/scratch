@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>04 画像と外部リソース</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap">
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; line-height: 1.6; }
+  .case { border: 1px solid #ccc; border-radius: 8px; padding: 8px 16px; margin: 12px 0; }
+  img { width: 64px; height: 64px; image-rendering: pixelated; border: 1px dashed #999; }
+  .font { font-family: 'Dela Gothic One', serif; font-size: 24px; }
+  .bg { width: 64px; height: 64px; background: url(./images/checker.png); background-size: 16px; border: 1px dashed #999; }
+  .bg-data { width: 64px; height: 64px; background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAQklEQVR4nGP4vkIfK9Jv/I4VkaqeYdSCUQuGgAXUMgiX+lELRi0YChZQyyBc6kctGLVgKFhALYNwqR+1YNSCIWABACED6ltCWiLsAAAAAElFTkSuQmCC); background-size: 16px; border: 1px dashed #999; }
+</style>
+</head>
+<body>
+<h1>04 画像と外部リソース</h1>
+<p>表示されない場合は点線の枠だけが出る。</p>
+
+<div class="case">
+  <h2>PNG を base64 の data URI で埋め込み</h2>
+  <img alt="data URI" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAQklEQVR4nGP4vkIfK9Jv/I4VkaqeYdSCUQuGgAXUMgiX+lELRi0YChZQyyBc6kctGLVgKFhALYNwqR+1YNSCIWABACED6ltCWiLsAAAAAElFTkSuQmCC">
+</div>
+
+<div class="case">
+  <h2>PNG を相対パスで参照</h2>
+  <img alt="relative" src="./images/checker.png">
+</div>
+
+<div class="case">
+  <h2>PNG を絶対 URL (GitHub Pages) で参照</h2>
+  <img alt="absolute" src="https://pokutuna.github.io/scratch/20261116-gh-issue-artifact/images/checker.png">
+</div>
+
+<div class="case">
+  <h2>PNG を絶対 URL (raw.githubusercontent.com) で参照</h2>
+  <img alt="raw" src="https://raw.githubusercontent.com/pokutuna/scratch/main/20261116-gh-issue-artifact/site/images/checker.png">
+</div>
+
+<div class="case">
+  <h2>CSS background (相対パス / data URI)</h2>
+  <div style="display:flex; gap:16px"><div class="bg"></div><div class="bg-data"></div></div>
+</div>
+
+<div class="case">
+  <h2>Google Fonts (外部 CSS)</h2>
+  <p class="font">外部フォントで表示されていれば太いゴシック</p>
+</div>
+
+<div class="case">
+  <h2>iframe</h2>
+  <iframe src="https://pokutuna.github.io/scratch/" width="320" height="120" title="iframe"></iframe>
+</div>
+
+<div class="case">
+  <h2>form (GET 送信)</h2>
+  <form action="https://github.com/search" method="get" target="_blank">
+    <input name="q" value="issue artifact"><button>送信</button>
+  </form>
+</div>
+</body>
+</html>

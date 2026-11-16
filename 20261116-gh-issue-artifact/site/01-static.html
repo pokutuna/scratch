@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>01 静的 HTML</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; line-height: 1.6; }
+  table { border-collapse: collapse; }
+  th, td { border: 1px solid #999; padding: 4px 12px; }
+  th { background: #eef; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 480px; }
+  .grid div { background: linear-gradient(135deg, #f7a82f, #2f81f7); color: #fff; padding: 12px; border-radius: 8px; text-align: center; }
+</style>
+</head>
+<body>
+<h1>01 静的 HTML</h1>
+
+<h2>インライン SVG の棒グラフ</h2>
+<svg width="320" height="160" viewBox="0 0 320 160" role="img" aria-label="棒グラフ">
+  <line x1="30" y1="140" x2="310" y2="140" stroke="#666"/>
+  <rect x="50"  y="40"  width="40" height="100" fill="#2f81f7"/>
+  <rect x="120" y="80"  width="40" height="60"  fill="#2f81f7"/>
+  <rect x="190" y="20"  width="40" height="120" fill="#f7a82f"/>
+  <rect x="260" y="100" width="40" height="40"  fill="#2f81f7"/>
+  <text x="70"  y="155" font-size="11" text-anchor="middle">A</text>
+  <text x="140" y="155" font-size="11" text-anchor="middle">B</text>
+  <text x="210" y="155" font-size="11" text-anchor="middle">C</text>
+  <text x="280" y="155" font-size="11" text-anchor="middle">D</text>
+</svg>
+
+<h2>テーブル</h2>
+<table>
+  <tr><th>項目</th><th>値</th></tr>
+  <tr><td>A</td><td>100</td></tr>
+  <tr><td>B</td><td>60</td></tr>
+  <tr><td>C</td><td>120</td></tr>
+</table>
+
+<h2>CSS Grid とグラデーション</h2>
+<div class="grid"><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div></div>
+</body>
+</html>

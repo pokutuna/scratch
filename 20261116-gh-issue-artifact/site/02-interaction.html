@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>02 クリック操作</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; line-height: 1.6; }
+  .case { border: 1px solid #ccc; border-radius: 8px; padding: 8px 16px; margin: 12px 0; }
+  #cb:checked + label { color: green; font-weight: bold; }
+  /* CSS だけのタブ */
+  .tabs input { display: none; }
+  .tabs label { display: inline-block; padding: 4px 12px; border: 1px solid #999; cursor: pointer; }
+  .tabs .panel { display: none; padding: 8px; border: 1px solid #999; margin-top: -1px; }
+  #t1:checked ~ .p1, #t2:checked ~ .p2 { display: block; }
+  #t1:checked + label, #t2:checked + label { background: #2f81f7; color: #fff; }
+  /* :target で切り替え */
+  .target-box { display: none; background: #ffe; padding: 4px 8px; }
+  .target-box:target { display: block; }
+  /* :hover */
+  .hover:hover { background: #2f81f7; color: #fff; }
+</style>
+</head>
+<body>
+<h1>02 クリック操作</h1>
+
+<div class="case">
+  <h2>JS (onclick)</h2>
+  <button onclick="this.textContent='クリックされた'">クリック</button>
+</div>
+
+<div class="case">
+  <h2>JS (script タグ)</h2>
+  <p id="js-result">script が実行されていない</p>
+  <script>document.getElementById('js-result').textContent = 'script が実行された';</script>
+</div>
+
+<div class="case">
+  <h2>noscript</h2>
+  <noscript><p>noscript の中身が表示されている (JS 無効として描画されている)</p></noscript>
+  <p>上に noscript の文が出ていなければ、JS 有効として描画されている</p>
+</div>
+
+<div class="case">
+  <h2>CSS のみ (checkbox + :checked)</h2>
+  <input type="checkbox" id="cb"><label for="cb">チェックすると緑になる</label>
+</div>
+
+<div class="case">
+  <h2>CSS のみのタブ (radio + :checked)</h2>
+  <div class="tabs">
+    <input type="radio" name="tab" id="t1" checked><label for="t1">タブ1</label>
+    <input type="radio" name="tab" id="t2"><label for="t2">タブ2</label>
+    <div class="panel p1">タブ1の中身</div>
+    <div class="panel p2">タブ2の中身</div>
+  </div>
+</div>
+
+<div class="case">
+  <h2>HTML のみ (details)</h2>
+  <details><summary>開く</summary><p>開いた中身</p></details>
+</div>
+
+<div class="case">
+  <h2>HTML のみ (popover 属性)</h2>
+  <button popovertarget="pop">popover を開く</button>
+  <div id="pop" popover>popover の中身</div>
+</div>
+
+<div class="case">
+  <h2>:target (ページ内リンク)</h2>
+  <a href="#tgt">リンクを押すと下に表示</a>
+  <div id="tgt" class="target-box">:target で表示された</div>
+</div>
+
+<div class="case">
+  <h2>:hover</h2>
+  <span class="hover">ホバーすると色が変わる</span>
+</div>
+
+<div class="case">
+  <h2>リンク</h2>
+  <a href="https://github.com/" target="_blank" rel="noopener">github.com を新しいタブで開く</a>
+</div>
+</body>
+</html>

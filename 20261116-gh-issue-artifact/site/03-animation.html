@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>03 アニメーション</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; line-height: 1.6; }
+  .case { border: 1px solid #ccc; border-radius: 8px; padding: 8px 16px; margin: 12px 0; }
+  @keyframes slide { from { transform: translateX(0); } to { transform: translateX(200px); } }
+  .box { width: 40px; height: 40px; background: #2f81f7; border-radius: 6px; animation: slide 1.5s ease-in-out infinite alternate; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { width: 32px; height: 32px; border: 4px solid #ddd; border-top-color: #f7a82f; border-radius: 50%; animation: spin 1s linear infinite; }
+  .trans { display: inline-block; padding: 8px 16px; background: #eee; transition: all .4s; }
+  .trans:hover { background: #f7a82f; transform: scale(1.2); }
+</style>
+</head>
+<body>
+<h1>03 アニメーション</h1>
+
+<div class="case">
+  <h2>CSS (@keyframes)</h2>
+  <div class="box"></div>
+  <p><span class="spinner" style="display:inline-block"></span></p>
+</div>
+
+<div class="case">
+  <h2>CSS (transition + :hover)</h2>
+  <span class="trans">ホバー</span>
+</div>
+
+<div class="case">
+  <h2>SVG (&lt;animate&gt;)</h2>
+  <svg width="240" height="60">
+    <circle cx="30" cy="30" r="20" fill="#2f81f7">
+      <animate attributeName="cx" values="30;210;30" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </svg>
+</div>
+
+<div class="case">
+  <h2>SVG (&lt;animateTransform&gt;)</h2>
+  <svg width="60" height="60" viewBox="0 0 60 60">
+    <rect x="15" y="15" width="30" height="30" fill="#f7a82f">
+      <animateTransform attributeName="transform" type="rotate" from="0 30 30" to="360 30 30" dur="2s" repeatCount="indefinite"/>
+    </rect>
+  </svg>
+</div>
+
+<div class="case">
+  <h2>JS (requestAnimationFrame + canvas)</h2>
+  <canvas id="cv" width="240" height="60" style="border:1px solid #ccc"></canvas>
+  <script>
+    const ctx = document.getElementById('cv').getContext('2d');
+    (function loop(t) {
+      ctx.clearRect(0, 0, 240, 60);
+      ctx.fillStyle = '#2f81f7';
+      ctx.beginPath();
+      ctx.arc(30 + (Math.sin(t / 500) + 1) * 90, 30, 20, 0, Math.PI * 2);
+      ctx.fill();
+      requestAnimationFrame(loop);
+    })(0);
+  </script>
+</div>
+</body>
+</html>

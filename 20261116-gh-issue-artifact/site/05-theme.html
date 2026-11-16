@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>05 テーマと画面幅</title>
+<style>
+  :root { --bg: #ffffff; --fg: #1f2328; --accent: #2f81f7; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0d1117; --fg: #e6edf3; --accent: #f7a82f; }
+  }
+  body { background: var(--bg); color: var(--fg); font-family: system-ui, sans-serif; margin: 24px; line-height: 1.6; }
+  .scheme::after { content: "light"; color: var(--accent); font-weight: bold; }
+  @media (prefers-color-scheme: dark) { .scheme::after { content: "dark"; } }
+  .width::after { content: "> 900px"; font-weight: bold; }
+  @media (max-width: 900px) { .width::after { content: "600–900px"; } }
+  @media (max-width: 600px) { .width::after { content: "< 600px"; } }
+  .wide { width: 1200px; height: 40px; background: linear-gradient(90deg, var(--accent), transparent); }
+  .vw { width: 100vw; height: 8px; background: var(--accent); }
+</style>
+</head>
+<body>
+<h1>05 テーマと画面幅</h1>
+<p>prefers-color-scheme: <span class="scheme"></span></p>
+<p>表示幅 (media query): <span class="width"></span></p>
+<p>100vw の帯:</p>
+<div class="vw"></div>
+<p>幅 1200px の要素 (横スクロールの有無を見る):</p>
+<div class="wide"></div>
+</body>
+</html>
