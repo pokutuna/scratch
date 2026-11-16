@@ -172,6 +172,9 @@
         font: 13px/1.5 var(--mono);
       }
       .repl-body pre:empty::before { content: "結果がここに出ます"; color: var(--muted); }
+      footer { margin: 40px 0 0; padding: 16px 0 32px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+      footer p { margin: 0 0 8px; max-width: 70em; }
+      footer ul { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; padding: 0; list-style: none; }
     </style>
   </head>
   <body>
@@ -264,6 +267,21 @@
           </section>
         </div>
       </main>
+
+      <footer>
+        <p>
+          このページは <a href="https://github.com/cloudflare/kitesurf/tree/4a2903813a22b08d4f3cc64a4b35339d0293a5d1">Kitesurf</a>
+          のビルド結果を改変せずに配布しています (Apache License 2.0)。
+          wasm には Stylo (MPL-2.0) などの Rust crate が含まれます。Kitesurf が当てたパッチを含むソースは、上のリンクのコミットにあります。
+        </p>
+        <ul>
+          <li><a href="./vendor/LICENSE.txt">Kitesurf の LICENSE</a></li>
+          <li><a href="./vendor/NOTICE.txt">Kitesurf の NOTICE</a></li>
+          <li><a href="./vendor/THIRD_PARTY_NOTICES.txt">Rust crate のライセンス</a></li>
+          <li><a href="./vendor/fonts/OFL.txt">Noto Sans、Serif、Mono のライセンス (OFL 1.1)</a></li>
+          <li><a href="./vendor/fonts/OFL-1.1-Noto-SC.txt">Noto Sans SC のライセンス (OFL 1.1)</a></li>
+        </ul>
+      </footer>
     </div>
     <script type="module" src="./main.js"></script>
   </body>

@@ -9,7 +9,7 @@ CORE_PKG   := $(KITESURF_DIR)/packages/core/pkg
 FONTS      := $(KITESURF_DIR)/packages/engine/public/fonts
 SITE_FONTS := NotoSans.ttf NotoSans-Italic.ttf NotoSerif.ttf NotoSansMono.ttf NotoSansCJKsc-Regular.woff2 OFL.txt
 
-.PHONY: download build dev site serve
+.PHONY: download build dev site notices serve
 
 download: $(KITESURF_DIR)
 
@@ -31,7 +31,18 @@ site:
 	rm -rf site/vendor && mkdir -p site/vendor/fonts
 	cp $(CORE_PKG)/kitesurf_core.js $(CORE_PKG)/kitesurf_core_bg.wasm site/vendor/
 	cp $(addprefix $(FONTS)/,$(SITE_FONTS)) site/vendor/fonts/
-	cp $(KITESURF_DIR)/LICENSE $(KITESURF_DIR)/NOTICE site/vendor/
+	cp $(KITESURF_DIR)/licenses/OFL-1.1-Noto-SC.txt site/vendor/fonts/
+	cp $(KITESURF_DIR)/LICENSE site/vendor/LICENSE.txt
+	cp $(KITESURF_DIR)/NOTICE site/vendor/NOTICE.txt
+	$(MAKE) notices
+
+# wasm に入る Rust crate のライセンスを cargo-about で集める (brew install cargo-about)。
+# 本家のリリースと同じ設定とテンプレートを使い、対象を core の wasm にする
+notices:
+	cd $(KITESURF_DIR) && node scripts/get-patched-vendor-crates.mjs > /dev/null && \
+	  cargo about generate --locked --fail --config .config/about.toml \
+	    --manifest-path packages/core/Cargo.toml --target wasm32-unknown-unknown \
+	    --output-file $(CURDIR)/site/vendor/THIRD_PARTY_NOTICES.txt scripts/rust-notices.hbs
 
 # site/ をローカルで配信する
 serve:

@@ -105,4 +105,15 @@ make serve   # http://localhost:8000 で確かめる
 
 ## ライセンス
 
-`site/vendor/` には Kitesurf のビルド結果 (Apache License 2.0、`LICENSE` と `NOTICE`) と Noto フォント (SIL Open Font License 1.1、`fonts/OFL.txt`) が入っています。
+`site/vendor/` には、次のものを改変せずに入れています。ライセンスの文書は、ブラウザで表示できるように拡張子を `.txt` にし、ページのフッターからリンクしています。
+
+| 中身 | ライセンス | 文書 |
+| --- | --- | --- |
+| Kitesurf の core (wasm と JS) | Apache License 2.0 | `LICENSE.txt`, `NOTICE.txt` |
+| wasm に含まれる Rust crate | MIT、Apache-2.0、BSD、MPL-2.0 など | `THIRD_PARTY_NOTICES.txt` |
+| Noto Sans、Serif、Mono | SIL Open Font License 1.1 | `fonts/OFL.txt` |
+| Noto Sans SC (CJK) | SIL Open Font License 1.1 | `fonts/OFL-1.1-Noto-SC.txt` |
+
+- `THIRD_PARTY_NOTICES.txt` は `make notices` で作ります。cargo-about (`brew install cargo-about`) を使い、本家のリリースと同じ設定とテンプレートで、core の wasm (`wasm32-unknown-unknown`) に入る crate を集めます。本家はこのファイルを CLI のリリースにしか付けていません
+- Stylo、cssparser、selectors などは MPL-2.0 です。MPL-2.0 は、実行形式で配布するときにソースの入手方法を示すよう求めます。Kitesurf はこれらの一部にパッチを当てています。パッチ (`scripts/patches/`) を含むソースは、Makefile で固定した Kitesurf のコミットにあるので、ページのフッターからそのコミットにリンクしています
+- 強いコピーレフトのライセンス (GPL、LGPL) の crate は含まれていません。本家の cargo-about の設定が、許可するライセンスを限っています
