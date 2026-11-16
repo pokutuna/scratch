@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kitesurf in Browser</title>
+    <style>
+      :root {
+        --bg: #f4f3ef;
+        --fg: #1c1c1a;
+        --muted: #6e6c64;
+        --line: #dedbd2;
+        --panel: #ffffff;
+        --sunken: #faf9f6;
+        --accent: #d4561c;
+        --accent-soft: #fbe9e0;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        --radius: 10px;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #161614;
+          --fg: #ecebe6;
+          --muted: #9d9b92;
+          --line: #34332e;
+          --panel: #1f1f1c;
+          --sunken: #1a1a18;
+          --accent: #f0804a;
+          --accent-soft: #3a2519;
+          color-scheme: dark;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font: 14px/1.6 system-ui, -apple-system, "Hiragino Sans", sans-serif;
+      }
+      a { color: var(--accent); }
+      .wrap { max-width: 1440px; margin: 0 auto; padding: 0 16px; }
+
+      /* ヘッダー */
+      header { padding: 28px 0 20px; }
+      .brand { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+      h1 { font-size: 22px; letter-spacing: -0.01em; margin: 0; }
+      h1 span { color: var(--accent); }
+      .links { display: flex; gap: 12px; font-size: 13px; }
+      .lead { margin: 6px 0 0; color: var(--muted); max-width: 70em; }
+
+      /* フォーム部品 */
+      input, button, textarea {
+        font: inherit; color: inherit; background: var(--panel);
+        border: 1px solid var(--line); border-radius: 8px;
+      }
+      input:focus-visible, textarea:focus-visible, button:focus-visible {
+        outline: 2px solid var(--accent); outline-offset: 1px;
+      }
+      button { cursor: pointer; padding: 5px 12px; }
+      button:hover { border-color: var(--muted); }
+      button.primary {
+        background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600;
+      }
+      button.primary:hover { filter: brightness(1.08); }
+      label.check { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); cursor: pointer; }
+      label.check input { accent-color: var(--accent); margin: 0; }
+
+      /* タブ */
+      .tabs {
+        display: flex; gap: 4px; padding: 4px; overflow-x: auto; scrollbar-width: none;
+        background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+      }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tabs button {
+        flex: none; border: none; background: transparent; color: var(--muted);
+        padding: 6px 14px; border-radius: 7px; white-space: nowrap;
+      }
+      .tabs button:hover { color: var(--fg); background: var(--sunken); }
+      .tabs button[aria-selected="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+      .tabs .sep { flex: none; width: 1px; margin: 6px 4px; background: var(--line); }
+
+      .urlbar {
+        display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+        margin-top: 10px; padding: 12px; background: var(--panel);
+        border: 1px solid var(--line); border-radius: var(--radius);
+      }
+      .urlbar[hidden] { display: none; }
+      #url { flex: 1; min-width: 14em; padding: 6px 10px; font-family: var(--mono); font-size: 13px; }
+      .presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; width: 100%; }
+      .presets::before { content: "例:"; color: var(--muted); font-size: 12px; }
+      .presets button { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--sunken); }
+      .note { color: var(--muted); font-size: 12px; margin: 0; width: 100%; }
+
+      /* 2 つのパネル */
+      .grid {
+        display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+        gap: 14px; margin-top: 14px;
+      }
+      @media (max-width: 900px) {
+        .grid { grid-template-columns: minmax(0, 1fr); }
+        #src { min-height: 280px; height: 280px; }
+      }
+      .panel {
+        display: flex; flex-direction: column; min-width: 0;
+        background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden;
+      }
+      .panel-head {
+        display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center;
+        padding: 8px 12px; border-bottom: 1px solid var(--line); min-height: 46px;
+      }
+      .panel-head h2 { font-size: 13px; margin: 0 auto 0 0; letter-spacing: 0.02em; }
+      .panel-head input[type="number"] { width: 5.5em; padding: 3px 6px; font-variant-numeric: tabular-nums; }
+      .unit { color: var(--muted); }
+
+      #src {
+        flex: 1; width: 100%; min-height: 560px; margin: 0; padding: 12px 14px;
+        border: none; border-radius: 0; resize: vertical; background: var(--sunken);
+        font: 12.5px/1.55 var(--mono); tab-size: 2;
+      }
+
+      .viewport { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+      .peek {
+        position: absolute; left: 8px; bottom: 8px; max-width: calc(100% - 16px);
+        padding: 3px 10px; border-radius: 6px; pointer-events: none;
+        background: var(--panel); border: 1px solid var(--line); box-shadow: 0 1px 4px #0002;
+        font: 12px/1.4 var(--mono); color: var(--muted);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .peek[hidden] { display: none; }
+      button.nav { padding: 4px 10px; font-size: 15px; line-height: 1; }
+      button.nav:disabled { opacity: 0.35; cursor: default; }
+      .frame {
+        position: relative; flex: 1; overflow: auto; max-height: 78vh; min-height: 300px;
+        background: repeating-conic-gradient(var(--sunken) 0 25%, var(--bg) 0 50%) 0 0 / 16px 16px;
+      }
+      canvas { display: block; max-width: 100%; height: auto; margin: 0 auto; box-shadow: 0 1px 4px #0002; }
+      .frame.actual canvas { max-width: none; margin: 0; }
+      .frame::after {
+        content: "描画中…"; position: absolute; top: 10px; right: 10px;
+        font-size: 12px; padding: 3px 10px; border-radius: 999px;
+        background: var(--fg); color: var(--bg); opacity: 0; transition: opacity .15s;
+        pointer-events: none;
+      }
+      .frame.busy::after { opacity: 0.85; }
+
+      .stats {
+        display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center;
+        padding: 8px 12px; border-top: 1px solid var(--line); min-height: 38px;
+        font: 12px/1.4 var(--mono); color: var(--muted);
+      }
+      .stats .chip { padding: 2px 7px; border-radius: 6px; background: var(--sunken); border: 1px solid var(--line); }
+      .stats .title { color: var(--fg); font-family: system-ui, sans-serif; font-weight: 600; margin-right: 4px; }
+      .stats.error { color: var(--accent); }
+      .caption { color: var(--muted); font-size: 12px; margin: 0; padding: 0 12px 10px; }
+
+      /* Boa */
+      .grid.repl { margin: 14px 0 48px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+      .repl .panel-head p { margin: 0 0 2px; color: var(--muted); font-size: 12px; width: 100%; }
+      code { font: 12px var(--mono); padding: 0 3px; border-radius: 4px; background: var(--sunken); border: 1px solid var(--line); }
+      .repl-body { padding: 12px; display: flex; flex-direction: column; flex: 1; }
+      .snippets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+      .snippets button { font-size: 12px; padding: 3px 10px; border-radius: 999px; background: var(--sunken); }
+      .snippets button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+      .repl-row { display: flex; gap: 8px; align-items: flex-start; }
+      .repl-row button { align-self: stretch; }
+      .repl-row textarea { flex: 1; height: 64px; min-height: 40px; padding: 8px 10px; resize: vertical; font: 13px/1.5 var(--mono); }
+      .repl-body pre {
+        flex: 1; max-height: 320px; overflow: auto;
+        margin: 10px 0 0; padding: 10px 12px; background: var(--sunken); border: 1px solid var(--line);
+        border-radius: 8px; white-space: pre-wrap; word-break: break-all; min-height: 42px;
+        font: 13px/1.5 var(--mono);
+      }
+      .repl-body pre:empty::before { content: "結果がここに出ます"; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <h1>Kitesurf <span>in Browser</span></h1>
+          <nav class="links">
+            <a href="https://github.com/cloudflare/kitesurf">Kitesurf</a>
+            <a href="https://github.com/pokutuna/scratch/tree/main/20261116-kitesurf">ソースと README</a>
+          </nav>
+        </div>
+        <p class="lead">
+          Cloudflare Workers 上のブラウザエンジン Kitesurf から、Rust 製の中核だけを wasm のまま取り出して動かしています。
+          HTML と CSS を layout して canvas に描きます。Workers も Chrome も使いません。初回は wasm (gzip 後 約 8 MB) とフォントを読み込みます。
+        </p>
+      </header>
+
+      <main>
+        <div class="tabs" id="tabs" role="tablist" aria-label="例"></div>
+        <form class="urlbar" id="urlbar" hidden>
+          <button type="button" id="back" class="nav" aria-label="戻る" title="戻る" disabled>←</button>
+          <button type="button" id="forward" class="nav" aria-label="進む" title="進む" disabled>→</button>
+          <input id="url" type="url" required placeholder="https://..." aria-label="URL" />
+          <button class="primary">開く</button>
+          <div class="presets" id="presets"></div>
+          <p class="note">
+            描画結果のリンクはクリックで開けます。ブラウザから取得するので、CORS を許可しているサイトだけ開けます (GitHub Pages や Wikipedia など)。Wikipedia の記事の URL は REST API の URL に置き換えます。
+          </p>
+        </form>
+
+        <div class="grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>HTML</h2>
+              <label class="check"><input id="live" type="checkbox" checked /> 入力ごとに描く</label>
+            </div>
+            <textarea id="src" spellcheck="false" aria-label="HTML"></textarea>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>描画結果</h2>
+              <label class="check">幅 <input id="width" type="number" min="200" max="2000" step="10" value="800" /> <span class="unit">px</span></label>
+              <label class="check"><input id="full" type="checkbox" checked /> ページ全体</label>
+              <label class="check"><input id="actual" type="checkbox" /> 等倍</label>
+              <button id="render" class="primary">描画</button>
+            </div>
+            <div class="viewport">
+              <div class="frame" id="frame"><canvas id="canvas" width="800" height="600"></canvas></div>
+              <div class="peek" id="peek" hidden></div>
+            </div>
+            <div class="stats" id="status" aria-live="polite">wasm を読み込み中…</div>
+            <p class="caption">ページの &lt;script&gt; は実行しません。URL を開いたときは、画像と CSS を取得して描きます。</p>
+          </section>
+        </div>
+
+        <div class="grid repl">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>DOM コンソール</h2>
+              <p>
+                描画した DOM を DevTools のように調べます。<code>$(sel)</code> と <code>$$(sel)</code> が要素を返し、要素は
+                <code>text</code>、<code>innerText</code>、<code>html</code>、<code>attr(name)</code>、<code>style(prop)</code> を持ちます。
+                Kitesurf の DomHandle の API を使い、コード自体はブラウザの JS で動きます。
+              </p>
+            </div>
+            <div class="repl-body">
+              <div class="snippets" id="domSnippets"></div>
+              <div class="repl-row">
+                <textarea id="domjs" spellcheck="false" aria-label="DOM コンソール"></textarea>
+                <button id="domrun" class="primary">実行</button>
+              </div>
+              <pre id="domout"></pre>
+            </div>
+          </section>
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Boa (JavaScript エンジン)</h2>
+              <p>同じ wasm に入っている Boa で式を評価します。Boa からは DOM に触れません (エンジンでは dom-shim が DOM を渡しています)。</p>
+            </div>
+            <div class="repl-body">
+              <div class="snippets" id="boaSnippets"></div>
+              <div class="repl-row">
+                <textarea id="js" spellcheck="false" aria-label="JavaScript"></textarea>
+                <button id="eval" class="primary">評価</button>
+              </div>
+              <pre id="jsout"></pre>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
