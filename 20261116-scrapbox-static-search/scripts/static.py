@@ -1,6 +1,6 @@
 """単語表に関する共通処理。段階 3 以降で共有する。
 
-- tokenize: lib/tokenize.mjs を Node で実行して分割する (ブラウザと同じ分割にするため)
+- tokenize: site/tokenize.mjs を Node で実行して分割する (ブラウザと同じ分割にするため)
 - embed_query: 単語表を引いて、クエリのベクトルを作る。ブラウザで行う計算と同じ
 """
 
